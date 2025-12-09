@@ -8,9 +8,14 @@ import { GeneratorForm } from './components/GeneratorForm';
 import { BookViewer } from './components/BookViewer';
 import { Tooltip } from './components/Tooltip';
 import { SettingsView } from './components/SettingsView';
-import { Settings as SettingsIcon, Home, Zap } from 'lucide-react';
+import { Settings as SettingsIcon, Home, Zap, Lock } from 'lucide-react';
+import { useClientConfig } from './hooks/useClientConfig';
 
 const App: React.FC = () => {
+  const clientConfig = useClientConfig();
+  const isKiosk = clientConfig.mode === 'kiosk';
+  const isOnline = clientConfig.mode === 'online';
+
   // Global State
   const [tier, setTier] = useState<AppTier>(AppTier.FREE);
   const [view, setView] = useState<AppView>('home');
@@ -222,47 +227,58 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4">
               <Tooltip content="Reset Studio" position="bottom">
                   <div className="flex items-center gap-2 cursor-pointer group" onClick={handleReset}>
-                      <div className="w-8 h-8 bg-accent-gold text-black rounded flex items-center justify-center shadow-lg shadow-accent-gold/20 transform group-hover:rotate-180 transition-transform duration-500">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                      </div>
-                      <span className="font-display font-black text-xl tracking-wider text-white hidden md:block">TATTOO<span className="text-accent-gold">CRATE</span></span>
+                       {clientConfig.logoUrl ? (
+                          <img src={clientConfig.logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
+                       ) : (
+                          <div className="w-8 h-8 bg-accent-gold text-black rounded flex items-center justify-center shadow-lg shadow-accent-gold/20 transform group-hover:rotate-180 transition-transform duration-500">
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </div>
+                       )}
+                      <span className="font-display font-black text-xl tracking-wider text-white hidden md:block uppercase">{clientConfig.parlorName}</span>
                   </div>
               </Tooltip>
               
-              <div className="hidden md:flex bg-ink-900 rounded border border-ink-800 p-0.5">
-                 <button 
-                   onClick={() => setView('home')}
-                   className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-wide ${view === 'home' ? 'bg-ink-800 text-white shadow-sm' : 'text-ink-500 hover:text-white'}`}
-                 >
-                    <Home className="w-3 h-3" /> Studio
-                 </button>
-                 <button 
-                   onClick={() => setView('settings')}
-                   className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-wide ${view === 'settings' ? 'bg-ink-800 text-white shadow-sm' : 'text-ink-500 hover:text-white'}`}
-                 >
-                    <SettingsIcon className="w-3 h-3" /> Settings
-                 </button>
-              </div>
+              {!isKiosk && !isOnline && (
+                <div className="hidden md:flex bg-ink-900 rounded border border-ink-800 p-0.5">
+                   <button
+                     onClick={() => setView('home')}
+                     className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-wide ${view === 'home' ? 'bg-ink-800 text-white shadow-sm' : 'text-ink-500 hover:text-white'}`}
+                   >
+                      <Home className="w-3 h-3" /> Studio
+                   </button>
+                   <button
+                     onClick={() => setView('settings')}
+                     className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-wide ${view === 'settings' ? 'bg-ink-800 text-white shadow-sm' : 'text-ink-500 hover:text-white'}`}
+                   >
+                      <SettingsIcon className="w-3 h-3" /> Settings
+                   </button>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setView(view === 'home' ? 'settings' : 'home')}
-                className="md:hidden p-2 text-ink-400 hover:bg-ink-800 rounded-full"
-              >
-                  {view === 'home' ? <SettingsIcon className="w-5 h-5" /> : <Home className="w-5 h-5" />}
-              </button>
+              {!isKiosk && !isOnline && (
+                <button
+                  onClick={() => setView(view === 'home' ? 'settings' : 'home')}
+                  className="md:hidden p-2 text-ink-400 hover:bg-ink-800 rounded-full"
+                >
+                    {view === 'home' ? <SettingsIcon className="w-5 h-5" /> : <Home className="w-5 h-5" />}
+                </button>
+              )}
 
-              <button 
-                  onClick={() => tier === AppTier.FREE && setShowUpgradeModal(true)}
-                  className={`px-4 py-2 rounded font-bold text-xs transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest ${
-                      tier === AppTier.PRO 
-                      ? 'bg-ink-800 text-accent-gold border border-accent-gold/50 cursor-default'
-                      : 'bg-accent-gold text-black hover:bg-yellow-400 shadow-lg shadow-accent-gold/20'
-                  }`}
-              >
-                  {tier === AppTier.PRO ? 'PRO ARTIST' : 'GO PRO'}
-              </button>
+              {/* Hide Upgrade Button in Kiosk Mode and Online Mode */}
+              {!isKiosk && !isOnline && (
+                <button
+                    onClick={() => tier === AppTier.FREE && setShowUpgradeModal(true)}
+                    className={`px-4 py-2 rounded font-bold text-xs transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest ${
+                        tier === AppTier.PRO
+                        ? 'bg-ink-800 text-accent-gold border border-accent-gold/50 cursor-default'
+                        : 'bg-accent-gold text-black hover:bg-yellow-400 shadow-lg shadow-accent-gold/20'
+                    }`}
+                >
+                    {tier === AppTier.PRO ? 'PRO ARTIST' : 'GO PRO'}
+                </button>
+              )}
             </div>
         </div>
       </nav>
@@ -276,11 +292,10 @@ const App: React.FC = () => {
             {portfolioState.designs.length === 0 && (
                 <div className="text-center space-y-6 max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-700 mt-8 md:mt-0">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded border border-ink-700 bg-ink-800/50 text-accent-gold text-[10px] font-bold uppercase tracking-widest mb-4">
-                        <span>AI POWERED INK DESIGNER</span>
+                        <span>{clientConfig.tagline || 'AI POWERED INK DESIGNER'}</span>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-display font-black text-white tracking-tight leading-none">
-                        DESIGN YOUR <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-accent-gold to-yellow-600">NEXT TATTOO</span>
+                    <h1 className="text-5xl md:text-7xl font-display font-black text-white tracking-tight leading-none uppercase">
+                        {clientConfig.parlorName}
                     </h1>
                     <p className="text-lg text-ink-400 font-light max-w-xl mx-auto">
                         Generate professional flash sheets, visualize ink on body parts, and create custom stencils in seconds.
@@ -336,6 +351,15 @@ const App: React.FC = () => {
         onUpgrade={handleUpgrade}
         onRestore={handleRestore}
       />
+
+      {/* Powered by TattooCrate Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-ink-950/90 backdrop-blur border-t border-ink-800 py-2 px-4 flex items-center justify-center gap-2 z-50">
+           <span className="text-[10px] text-ink-400 uppercase tracking-widest">Powered by</span>
+           <div className="flex items-center gap-1">
+               <div className="w-3 h-3 bg-accent-gold rounded-sm"></div>
+               <span className="font-display font-bold text-xs text-white tracking-wider">TATTOO<span className="text-accent-gold">CRATE</span></span>
+           </div>
+      </div>
     </div>
   );
 };

@@ -12,6 +12,31 @@
     <title>TattooCrate - AI Tattoo Designer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="/client-config.js"></script>
+    <script>
+        // Apply Client Configuration to CSS Variables
+        (function() {
+            try {
+                const config = window.TATTOO_CRATE_CONFIG || {};
+                const theme = config.theme || {};
+                const root = document.documentElement;
+
+                if (theme.accentColor) {
+                    root.style.setProperty('--color-accent', theme.accentColor);
+                } else {
+                    root.style.setProperty('--color-accent', '#fbbf24');
+                }
+
+                if (theme.backgroundColor) {
+                    root.style.setProperty('--color-bg', theme.backgroundColor);
+                } else {
+                    root.style.setProperty('--color-bg', '#0f172a');
+                }
+            } catch (e) {
+                console.error("Failed to load client theme", e);
+            }
+        })();
+    </script>
     <script>
       tailwind.config = {
         theme: {
@@ -27,11 +52,11 @@
                 400: '#94a3b8',
                 500: '#64748b',
                 800: '#1e293b',
-                900: '#0f172a',
+                900: 'var(--color-bg)',
                 950: '#020617',
               },
               accent: {
-                gold: '#fbbf24',
+                gold: 'var(--color-accent)',
                 red: '#ef4444'
               }
             },
