@@ -147,5 +147,23 @@ declare global {
 
   interface Window {
     aistudio?: AIStudio;
+    TATTOO_CRATE_CONFIG?: ClientConfig;
   }
+}
+
+export interface ClientConfig {
+  parlorName: string;
+  tagline?: string;
+  logoUrl?: string;
+  theme: {
+    accentColor: string;
+    backgroundColor: string;
+  };
+  mode: 'full' | 'kiosk' | 'online';
+  links?: {
+    website?: string;
+    instagram?: string;
+    booking?: string;
+  };
+  requireWaiver?: boolean;
 }
