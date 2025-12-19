@@ -1,10 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppTier, GenerationParams, BodyPlacement } from "../types";
+import { sanitizePromptInput } from "./security";
 
 export const generateTattooDesign = async (params: GenerationParams): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const { concept, placement, style, tier, variationIndex = 0, isProjectItem = false } = params;
+
+  // Security: Sanitize user input to prevent prompt injection
+  const safeConcept = sanitizePromptInput(concept);
 
   // Use Flash model for speed and efficiency.
   const modelName = 'gemini-2.5-flash-image';
@@ -36,7 +40,7 @@ export const generateTattooDesign = async (params: GenerationParams): Promise<st
   const prompt = `
     Design a professional tattoo.
     
-    SUBJECT: "${concept}"
+    SUBJECT: "${safeConcept}"
     STYLE: ${style}
     VARIATION: #${variationIndex + 1}
     
