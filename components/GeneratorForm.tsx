@@ -36,6 +36,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoad
   const [style, setStyle] = useState<TattooStyle>(TattooStyle.TRADITIONAL);
   const [mode, setMode] = useState<ProjectMode>(ProjectMode.SINGLE);
   const [projectSize, setProjectSize] = useState(4); // Default 4 items for project
+  const conceptInputId = React.useId();
 
   const handleSubmit = () => {
     if (!concept) return;
@@ -47,14 +48,18 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoad
     <div className="bg-ink-800 rounded-xl shadow-2xl shadow-black border border-ink-700 overflow-hidden text-ink-50">
       
       {/* Mode Tabs */}
-      <div className="flex border-b border-ink-700">
+      <div className="flex border-b border-ink-700" role="tablist" aria-label="Project Mode">
           <button 
+             role="tab"
+             aria-selected={mode === ProjectMode.SINGLE}
              onClick={() => setMode(ProjectMode.SINGLE)}
              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${mode === ProjectMode.SINGLE ? 'bg-ink-800 text-accent-gold border-b-2 border-accent-gold' : 'bg-ink-900 text-ink-500 hover:text-white'}`}
           >
               <Zap className="w-4 h-4" /> Single Design
           </button>
           <button 
+             role="tab"
+             aria-selected={mode === ProjectMode.PROJECT}
              onClick={() => setMode(ProjectMode.PROJECT)}
              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${mode === ProjectMode.PROJECT ? 'bg-ink-800 text-accent-gold border-b-2 border-accent-gold' : 'bg-ink-900 text-ink-500 hover:text-white'}`}
           >
@@ -66,7 +71,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoad
         
         {/* Concept Section */}
         <div className="space-y-4">
-          <label className="flex items-center space-x-2 text-xs font-bold text-ink-400 uppercase tracking-widest">
+          <label htmlFor={conceptInputId} className="flex items-center space-x-2 text-xs font-bold text-ink-400 uppercase tracking-widest">
             <span className="text-accent-gold">01.</span>
             <span>Tattoo Concept</span>
           </label>
@@ -74,6 +79,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoad
           <Tooltip content="Describe your tattoo idea" position="top" className="w-full">
             <div className="relative group w-full">
               <input 
+                id={conceptInputId}
                 type="text" 
                 value={concept}
                 onChange={(e) => setConcept(e.target.value)}
