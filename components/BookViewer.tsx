@@ -41,10 +41,21 @@ export const BookViewer: React.FC<DesignViewerProps> = ({
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    // Security: Escape user input to prevent XSS in the new window
+    const escapeHtml = (unsafe: string) => {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+    const safeConcept = escapeHtml(concept);
+
     printWindow.document.write(`
       <html>
         <head>
-          <title>${concept} - Tattoo Flash</title>
+          <title>${safeConcept} - Tattoo Flash</title>
           <style>
             @media print {
                @page { size: ${paperSize.toLowerCase()}; margin: 0; }
@@ -68,7 +79,7 @@ export const BookViewer: React.FC<DesignViewerProps> = ({
             <div class="page">
               <img src="${p.modifiedUrl || p.originalUrl}" />
               <div class="meta">
-                 TATTOOCRATE REF: ${p.id} | CONCEPT: ${concept.toUpperCase()}
+                 TATTOOCRATE REF: ${p.id} | CONCEPT: ${safeConcept.toUpperCase()}
               </div>
             </div>
           `).join('')}
