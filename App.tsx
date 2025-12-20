@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BodyPlacement, AppTier, TattooStyle, CollectionSize, DesignData, PortfolioState, AppView, AppSettings, PaperSize, ProjectMode } from './types';
 import { generateTattooDesign } from './services/geminiService';
 import { purchaseSubscription, restorePurchases, setPurchaseFlag } from './services/storeService';
@@ -102,13 +102,13 @@ const App: React.FC = () => {
     window.location.reload();
   };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = useCallback(async () => {
       await purchaseSubscription();
       setPurchaseFlag();
       setTier(AppTier.PRO);
-  };
+  }, []);
 
-  const handleRestore = async () => {
+  const handleRestore = useCallback(async () => {
       const restoredTier = await restorePurchases();
       if (restoredTier === AppTier.PRO) {
           setTier(AppTier.PRO);
@@ -116,9 +116,10 @@ const App: React.FC = () => {
       } else {
           alert("No previous license found.");
       }
-  };
+  }, []);
 
-  const handleGenerate = async (concept: string, placement: BodyPlacement, style: TattooStyle, size: number, mode: ProjectMode) => {
+  // Optimization: Memoized to prevent re-creation on every render, allowing children like GeneratorForm to potentially optimize renders.
+  const handleGenerate = useCallback(async (concept: string, placement: BodyPlacement, style: TattooStyle, size: number, mode: ProjectMode) => {
     if (tier === AppTier.FREE && size > 1) {
         setShowUpgradeModal(true);
         return;
@@ -178,9 +179,11 @@ const App: React.FC = () => {
       setLoading(false);
       setLoadingProgress(undefined);
     }
-  };
+  }, [tier]);
 
-  const handleRegenerateSinglePage = async (pageId: string) => {
+  // Optimization: Memoized to ensure stable prop reference for BookViewer.
+  // Dependencies include specific state slices to ensure we always have fresh data for regeneration logic without breaking memoization unnecessarily.
+  const handleRegenerateSinglePage = useCallback(async (pageId: string) => {
       const pageIndex = portfolioState.designs.findIndex(p => p.id === pageId);
       if (pageIndex === -1) return;
 
@@ -209,14 +212,15 @@ const App: React.FC = () => {
           }
           console.error("Failed to regenerate", e);
       }
-  };
+  }, [portfolioState.designs, portfolioState.concept, portfolioState.placement, portfolioState.style, portfolioState.mode, tier]);
 
-  const handleUpdatePage = (pageId: string, newUrl: string) => {
+  // Optimization: Stable callback (no dependencies) to prevent BookViewer re-renders when updating a single design.
+  const handleUpdatePage = useCallback((pageId: string, newUrl: string) => {
       setPortfolioState(prev => ({
           ...prev,
           designs: prev.designs.map(p => p.id === pageId ? { ...p, modifiedUrl: newUrl } : p)
       }));
-  };
+  }, []);
 
   return (
     <div className="min-h-screen font-sans bg-ink-900 text-ink-50 selection:bg-accent-gold selection:text-black pb-20 md:pb-0">

@@ -19,7 +19,14 @@ interface DesignViewerProps {
   onUpgrade: () => void;
 }
 
-export const BookViewer: React.FC<DesignViewerProps> = ({ 
+/**
+ * ⚡ Performance Optimization:
+ * Wrapped in React.memo to prevent re-renders when parent state (like loading progress) updates
+ * but the designs list itself hasn't changed.
+ *
+ * Impact: Prevents N extra re-renders during batch generation (where N is batch size).
+ */
+export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
   designs, concept, tier, paperSize, mode, placement, onRegeneratePage, onUpdatePage, onUpgrade 
 }) => {
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -275,4 +282,6 @@ export const BookViewer: React.FC<DesignViewerProps> = ({
       )}
     </div>
   );
-};
+});
+
+BookViewer.displayName = 'BookViewer';
