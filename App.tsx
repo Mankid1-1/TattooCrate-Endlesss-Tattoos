@@ -230,7 +230,12 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Tooltip content="Reset Studio" position="bottom">
-                  <div className="flex items-center gap-2 cursor-pointer group" onClick={handleReset}>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 cursor-pointer group bg-transparent border-none p-0 text-left"
+                    onClick={handleReset}
+                    aria-label="Reset Studio"
+                  >
                        {clientConfig.logoUrl ? (
                           <img src={clientConfig.logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
                        ) : (
@@ -239,7 +244,7 @@ const App: React.FC = () => {
                           </div>
                        )}
                       <span className="font-display font-black text-xl tracking-wider text-white hidden md:block uppercase">{clientConfig.parlorName}</span>
-                  </div>
+                  </button>
               </Tooltip>
               
               {!isKiosk && !isOnline && (
@@ -265,6 +270,7 @@ const App: React.FC = () => {
                 <button
                   onClick={() => setView(view === 'home' ? 'settings' : 'home')}
                   className="md:hidden p-2 text-ink-400 hover:bg-ink-800 rounded-full"
+                  aria-label={view === 'home' ? 'Open Settings' : 'Go to Home'}
                 >
                     {view === 'home' ? <SettingsIcon className="w-5 h-5" /> : <Home className="w-5 h-5" />}
                 </button>
