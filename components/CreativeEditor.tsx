@@ -50,10 +50,28 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
     }
   }, [items, pageId]);
 
+  const [loadedBaseImage, setLoadedBaseImage] = useState<HTMLImageElement | null>(null);
+
+  // Optimization: Pre-load base image to prevent re-decoding on every render frame
+  useEffect(() => {
+    let isMounted = true;
+    const img = new Image();
+    img.src = baseImage;
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (isMounted) setLoadedBaseImage(img);
+    };
+    return () => {
+      isMounted = false;
+    };
+  }, [baseImage]);
+
   // Canvas Setup
   useEffect(() => {
-    drawCanvas();
-  }, [baseImage, items, currentPath, selectedId]);
+    if (loadedBaseImage) {
+      drawCanvas();
+    }
+  }, [loadedBaseImage, items, currentPath, selectedId]);
 
   const getCanvasCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -81,28 +99,16 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
+    if (!canvas || !ctx || !loadedBaseImage) return;
 
-    // Load base image
-    const img = new Image();
-    img.src = baseImage;
-    img.crossOrigin = "anonymous"; 
-    
     // Draw background white (for stencils) or keep transparent? 
     // TattooCrate implies stencils often have white backgrounds, but on-body has color.
     // Let's use white to be safe for saving.
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    if (img.complete) {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        drawItems(ctx);
-    } else {
-        img.onload = () => {
-             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-             drawItems(ctx);
-        }
-    }
+    ctx.drawImage(loadedBaseImage, 0, 0, canvas.width, canvas.height);
+    drawItems(ctx);
   };
 
   const drawItems = (ctx: CanvasRenderingContext2D) => {
