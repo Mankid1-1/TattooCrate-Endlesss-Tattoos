@@ -6,6 +6,7 @@ import { PlacementCanvas } from './PlacementCanvas';
 import { ClientWaiverModal } from './ClientWaiverModal';
 import { Tooltip } from './Tooltip';
 import { DesignCard } from './DesignCard';
+import { escapeHtml } from '../services/security';
 
 interface DesignViewerProps {
   designs: DesignData[];
@@ -49,14 +50,6 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
     if (!printWindow) return;
 
     // Security: Escape user input to prevent XSS in the new window
-    const escapeHtml = (unsafe: string) => {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    };
     const safeConcept = escapeHtml(concept);
 
     printWindow.document.write(`
@@ -86,7 +79,7 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             <div class="page">
               <img src="${p.modifiedUrl || p.originalUrl}" />
               <div class="meta">
-                 TATTOOCRATE REF: ${p.id} | CONCEPT: ${safeConcept.toUpperCase()}
+                 TATTOOCRATE REF: ${escapeHtml(p.id)} | CONCEPT: ${safeConcept.toUpperCase()}
               </div>
             </div>
           `).join('')}

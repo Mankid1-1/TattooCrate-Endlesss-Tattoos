@@ -28,3 +28,20 @@ export const sanitizePromptInput = (input: string, maxLength: number = 1000): st
 
     return sanitized;
 };
+
+/**
+ * Escapes unsafe characters for HTML to prevent XSS.
+ * Useful when using APIs like dangerouslySetInnerHTML or window.open().
+ *
+ * @param unsafe The unsafe string.
+ * @returns Escaped string.
+ */
+export const escapeHtml = (unsafe: string): string => {
+  if (!unsafe) return "";
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
