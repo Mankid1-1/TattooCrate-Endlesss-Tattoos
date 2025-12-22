@@ -29,6 +29,7 @@ export const DesignCard = React.memo<DesignCardProps>(({ design, index, onFocus 
         <Tooltip content="Inspect & Edit">
           <button
             onClick={() => onFocus(design.id)}
+            aria-label="Inspect & Edit"
             className="p-3 bg-white rounded-full text-black hover:scale-110 transition-transform shadow-lg"
           >
             <ZoomIn className="w-5 h-5" />

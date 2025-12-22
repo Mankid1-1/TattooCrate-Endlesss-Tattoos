@@ -118,6 +118,7 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             <Tooltip content="Sign Client Intake Form">
               <button 
                 onClick={() => setIsWaiverOpen(true)}
+                aria-label="Sign Client Intake Form"
                 className="flex items-center gap-2 bg-ink-900 text-ink-300 hover:text-white px-4 py-3 rounded-lg font-bold border border-ink-700 hover:border-ink-500 transition-colors"
               >
                 <FileSignature className="w-4 h-4" />
@@ -170,6 +171,7 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
                 <Tooltip content="Close" position="bottom" className="absolute top-0 right-0 md:-top-4 md:-right-4 z-50">
                   <button 
                       onClick={() => setFocusedId(null)}
+                      aria-label="Close design view"
                       className="p-2 bg-white/10 text-white hover:bg-white/20 rounded-full transition-colors"
                   >
                       <X className="w-6 h-6" />
