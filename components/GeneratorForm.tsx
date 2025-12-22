@@ -30,7 +30,7 @@ const PLACEMENT_ICONS: Record<BodyPlacement, string> = {
   [BodyPlacement.NECK]: '👤',
 };
 
-export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoading, tier, onUpgrade }) => {
+export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoading, tier, onUpgrade }) => {
   const [concept, setConcept] = useState('');
   const [placement, setPlacement] = useState<BodyPlacement>(BodyPlacement.ARM); // Default to Arm for Sleeve
   const [style, setStyle] = useState<TattooStyle>(TattooStyle.TRADITIONAL);
@@ -236,7 +236,9 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerate, isLoad
       </div>
     </div>
   );
-};
+});
+
+GeneratorForm.displayName = 'GeneratorForm';
 
 // Helper for style visuals
 const getStyleEmoji = (style: TattooStyle) => {
