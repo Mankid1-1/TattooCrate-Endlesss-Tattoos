@@ -42,6 +42,16 @@ const App: React.FC = () => {
   // UI
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Optimization: Stable handler for opening upgrade modal
+  const handleOpenUpgradeModal = useCallback(() => {
+    setShowUpgradeModal(true);
+  }, []);
+
+  // Optimization: Stable handler for closing upgrade modal
+  const handleCloseUpgradeModal = useCallback(() => {
+    setShowUpgradeModal(false);
+  }, []);
+
   // Load persistence
   useEffect(() => {
       const savedPortfolio = localStorage.getItem('tc_portfolio_state');
@@ -279,7 +289,7 @@ const App: React.FC = () => {
               {/* Hide Upgrade Button in Kiosk Mode and Online Mode */}
               {!isKiosk && !isOnline && (
                 <button
-                    onClick={() => tier === AppTier.FREE && setShowUpgradeModal(true)}
+                    onClick={() => tier === AppTier.FREE && handleOpenUpgradeModal()}
                     className={`px-4 py-2 rounded font-bold text-xs transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest ${
                         tier === AppTier.PRO
                         ? 'bg-ink-800 text-accent-gold border border-accent-gold/50 cursor-default'
@@ -319,7 +329,7 @@ const App: React.FC = () => {
                     onGenerate={handleGenerate} 
                     isLoading={loading}
                     tier={tier}
-                    onUpgrade={() => setShowUpgradeModal(true)}
+                    onUpgrade={handleOpenUpgradeModal}
                 />
             </div>
 
@@ -335,7 +345,7 @@ const App: React.FC = () => {
                         placement={portfolioState.placement}
                         onRegeneratePage={handleRegenerateSinglePage}
                         onUpdatePage={handleUpdatePage}
-                        onUpgrade={() => setShowUpgradeModal(true)}
+                        onUpgrade={handleOpenUpgradeModal}
                     />
                 </div>
             )}
@@ -357,7 +367,7 @@ const App: React.FC = () => {
       
       <UpgradeModal 
         isOpen={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)}
+        onClose={handleCloseUpgradeModal}
         onUpgrade={handleUpgrade}
         onRestore={handleRestore}
       />
