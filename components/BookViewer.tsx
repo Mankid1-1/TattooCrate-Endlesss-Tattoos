@@ -6,7 +6,7 @@ import { PlacementCanvas } from './PlacementCanvas';
 import { ClientWaiverModal } from './ClientWaiverModal';
 import { Tooltip } from './Tooltip';
 import { DesignCard } from './DesignCard';
-import { escapeHtml } from '../services/security';
+import { escapeHtml, isValidImageUrl } from '../services/security';
 
 interface DesignViewerProps {
   designs: DesignData[];
@@ -75,14 +75,18 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             <h1>TATTOO STENCIL READY</h1>
             <p>Print scale set to ${paperSize}. Contrast boosted for transfer.</p>
           </div>
-          ${list.map(p => `
+          ${list.map(p => {
+             const url = p.modifiedUrl || p.originalUrl;
+             // Security: Validate URL and escape it to prevent XSS
+             const safeUrl = isValidImageUrl(url) ? escapeHtml(url) : '';
+             return `
             <div class="page">
-              <img src="${p.modifiedUrl || p.originalUrl}" />
+              <img src="${safeUrl}" />
               <div class="meta">
                  TATTOOCRATE REF: ${escapeHtml(p.id)} | CONCEPT: ${safeConcept.toUpperCase()}
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
           <script>window.onload = () => setTimeout(() => window.print(), 500)</script>
         </body>
       </html>
