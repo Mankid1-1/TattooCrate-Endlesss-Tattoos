@@ -45,3 +45,26 @@ export const escapeHtml = (unsafe: string): string => {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 };
+
+/**
+ * Validates if a string is a safe image URL (http, https, or data:image).
+ * Prevents usage of javascript: URIs in img src.
+ *
+ * @param url The URL to validate
+ * @returns True if valid
+ */
+export const isValidImageUrl = (url: string): boolean => {
+  if (!url) return false;
+  const lower = url.toLowerCase().trim();
+
+  // Allow data URIs
+  if (lower.startsWith('data:image/')) return true;
+
+  // Allow http/https
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return true;
+
+  // Allow relative paths (e.g. /assets/...)
+  if (lower.startsWith('/') && !lower.startsWith('//')) return true;
+
+  return false;
+};
