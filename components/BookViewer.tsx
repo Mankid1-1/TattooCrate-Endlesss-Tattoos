@@ -295,3 +295,5 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
 });
 
 BookViewer.displayName = 'BookViewer';
+
+export default BookViewer;

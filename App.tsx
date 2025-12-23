@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { BodyPlacement, AppTier, TattooStyle, CollectionSize, DesignData, PortfolioState, AppView, AppSettings, PaperSize, ProjectMode } from './types';
 import { generateTattooDesign } from './services/geminiService';
 import { purchaseSubscription, restorePurchases, setPurchaseFlag } from './services/storeService';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { UpgradeModal } from './components/UpgradeModal';
 import { GeneratorForm } from './components/GeneratorForm';
-import { BookViewer } from './components/BookViewer';
 import { Tooltip } from './components/Tooltip';
-import { SettingsView } from './components/SettingsView';
 import { Settings as SettingsIcon, Home, Zap, Lock } from 'lucide-react';
 import { useClientConfig } from './hooks/useClientConfig';
+
+// Lazy load components
+const BookViewer = React.lazy(() => import('./components/BookViewer'));
+const SettingsView = React.lazy(() => import('./components/SettingsView'));
 
 const App: React.FC = () => {
   const clientConfig = useClientConfig();
@@ -336,28 +338,32 @@ const App: React.FC = () => {
             {/* Results */}
             {portfolioState.designs.length > 0 && (
                 <div className="border-t border-ink-800 pt-16">
-                    <BookViewer 
-                        designs={portfolioState.designs}
-                        concept={portfolioState.concept}
-                        tier={tier}
-                        paperSize={appSettings.paperSize}
-                        mode={portfolioState.mode}
-                        placement={portfolioState.placement}
-                        onRegeneratePage={handleRegenerateSinglePage}
-                        onUpdatePage={handleUpdatePage}
-                        onUpgrade={handleOpenUpgradeModal}
-                    />
+                    <Suspense fallback={<div className="flex items-center justify-center p-12 text-ink-500 animate-pulse">Loading Studio...</div>}>
+                        <BookViewer
+                            designs={portfolioState.designs}
+                            concept={portfolioState.concept}
+                            tier={tier}
+                            paperSize={appSettings.paperSize}
+                            mode={portfolioState.mode}
+                            placement={portfolioState.placement}
+                            onRegeneratePage={handleRegenerateSinglePage}
+                            onUpdatePage={handleUpdatePage}
+                            onUpgrade={handleOpenUpgradeModal}
+                        />
+                    </Suspense>
                 </div>
             )}
           </>
         ) : (
-          <SettingsView 
-            settings={appSettings} 
-            onUpdateSettings={setAppSettings}
-            tier={tier}
-            onResetApp={handleFullReset}
-            onRestorePurchases={handleRestore}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center p-12 text-ink-500 animate-pulse">Loading Settings...</div>}>
+              <SettingsView
+                settings={appSettings}
+                onUpdateSettings={setAppSettings}
+                tier={tier}
+                onResetApp={handleFullReset}
+                onRestorePurchases={handleRestore}
+              />
+          </Suspense>
         )}
 
       </main>
