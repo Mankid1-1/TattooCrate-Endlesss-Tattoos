@@ -123,6 +123,8 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 {Object.values(BodyPlacement).filter(p => mode === ProjectMode.SINGLE ? true : p !== BodyPlacement.PAPER).map((place) => (
                   <Tooltip key={place} content={`Select ${place}`} className="w-full h-full">
                     <button
+                      aria-pressed={placement === place}
+                      aria-label={`Select ${place} placement`}
                       onClick={() => setPlacement(place)}
                       className={`w-full h-full px-3 py-3 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
                         placement === place 
@@ -154,6 +156,8 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                         <Tooltip key={s} content={isLocked ? "Upgrade for larger sleeves" : `${s} Design Elements`} className="w-full">
                         <button 
                             disabled={isLocked}
+                            aria-pressed={projectSize === s && !isLocked}
+                            aria-label={`Select ${s} design elements`}
                             onClick={() => setProjectSize(s)}
                             className={`w-full relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
                                 projectSize === s && !isLocked
@@ -186,6 +190,8 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 {Object.values(TattooStyle).map((s) => (
                     <Tooltip key={s} content={s} position="top" className="w-full">
                       <button 
+                          aria-pressed={style === s}
+                          aria-label={`Select ${s} style`}
                           onClick={() => setStyle(s)}
                           className={`w-full p-3 rounded-lg border text-left transition-all group ${
                               style === s 
