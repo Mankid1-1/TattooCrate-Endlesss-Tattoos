@@ -25,7 +25,7 @@ export const DesignCard = React.memo<DesignCardProps>(({ design, index, onFocus 
       </div>
 
       {/* Hover Overlay */}
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
+      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
         <Tooltip content="Inspect & Edit">
           <button
             onClick={() => onFocus(design.id)}
