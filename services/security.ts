@@ -14,7 +14,7 @@ export const sanitizePromptInput = (input: string, maxLength: number = 1000): st
     let sanitized = input.slice(0, maxLength);
 
     // 2. Remove control characters (except common whitespace)
-    // sanitized = sanitized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '');
+    sanitized = sanitized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '');
 
     // 3. Escape double quotes to prevent breaking out of string context in JSON or pseudo-code
     sanitized = sanitized.replace(/"/g, '\\"');
