@@ -52,13 +52,16 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
     // Security: Escape user input to prevent XSS in the new window
     const safeConcept = escapeHtml(concept);
 
+    // Security: Validate paperSize to prevent CSS injection
+    const safePaperSize = Object.values(PaperSize).includes(paperSize) ? paperSize : PaperSize.A4;
+
     printWindow.document.write(`
       <html>
         <head>
           <title>${safeConcept} - Tattoo Flash</title>
           <style>
             @media print {
-               @page { size: ${paperSize.toLowerCase()}; margin: 0; }
+               @page { size: ${safePaperSize.toLowerCase()}; margin: 0; }
                body { margin: 0; padding: 0; font-family: 'Courier New', monospace; }
                .page { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; page-break-after: always; }
                img { max-width: 80%; max-height: 80%; object-fit: contain; filter: grayscale(100%) contrast(150%); }
@@ -66,14 +69,14 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             }
             body { background: #fff; color: #000; text-align: center; }
             .no-print { padding: 20px; background: #000; color: #fff; margin-bottom: 20px; }
-            .page { border: 1px solid #eee; margin: 20px auto; width: ${paperSize === PaperSize.A4 ? '210mm' : '8.5in'}; height: ${paperSize === PaperSize.A4 ? '297mm' : '11in'}; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+            .page { border: 1px solid #eee; margin: 20px auto; width: ${safePaperSize === PaperSize.A4 ? '210mm' : '8.5in'}; height: ${safePaperSize === PaperSize.A4 ? '297mm' : '11in'}; display: flex; align-items: center; justify-content: center; flex-direction: column; }
             img { max-width: 90%; max-height: 85%; }
           </style>
         </head>
         <body>
           <div class="no-print">
             <h1>TATTOO STENCIL READY</h1>
-            <p>Print scale set to ${paperSize}. Contrast boosted for transfer.</p>
+            <p>Print scale set to ${safePaperSize}. Contrast boosted for transfer.</p>
           </div>
           ${list.map(p => {
              const url = p.modifiedUrl || p.originalUrl;
