@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { DesignData, AppTier, PaperSize, BodyPlacement, ProjectMode } from '../types';
 import { Printer, Download, RefreshCw, Edit3, X, Lock, Layers, Palette, FileSignature } from 'lucide-react';
-import { CreativeEditor } from './CreativeEditor';
-import { PlacementCanvas } from './PlacementCanvas';
-import { ClientWaiverModal } from './ClientWaiverModal';
 import { Tooltip } from './Tooltip';
 import { DesignCard } from './DesignCard';
 import { escapeHtml, isValidImageUrl } from '../services/security';
+
+// Lazy load large modal components
+const CreativeEditor = React.lazy(() => import('./CreativeEditor').then(module => ({ default: module.CreativeEditor })));
+const PlacementCanvas = React.lazy(() => import('./PlacementCanvas').then(module => ({ default: module.PlacementCanvas })));
+const ClientWaiverModal = React.lazy(() => import('./ClientWaiverModal').then(module => ({ default: module.ClientWaiverModal })));
 
 interface DesignViewerProps {
   designs: DesignData[];
@@ -254,42 +256,48 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
       )}
 
       {/* Editor Overlay */}
-      {isEditorOpen && focusedDesign && (
-          <CreativeEditor 
-            pageId={focusedDesign.id}
-            baseImage={focusedDesign.modifiedUrl || focusedDesign.originalUrl}
-            onClose={() => setIsEditorOpen(false)}
-            onSave={(newUrl) => {
-                onUpdatePage(focusedDesign.id, newUrl);
-                setIsEditorOpen(false);
-            }}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Editor...</div></div>}>
+        {isEditorOpen && focusedDesign && (
+            <CreativeEditor
+                pageId={focusedDesign.id}
+                baseImage={focusedDesign.modifiedUrl || focusedDesign.originalUrl}
+                onClose={() => setIsEditorOpen(false)}
+                onSave={(newUrl) => {
+                    onUpdatePage(focusedDesign.id, newUrl);
+                    setIsEditorOpen(false);
+                }}
+            />
+        )}
+      </Suspense>
 
       {/* Sleeve Builder Overlay */}
-      {isBuilderOpen && mode === ProjectMode.PROJECT && (
-          <PlacementCanvas 
-            placement={placement}
-            availableDesigns={designs}
-            onSave={(layers) => {
-                alert("Sleeve saved to project file.");
-                setIsBuilderOpen(false);
-            }}
-            onClose={() => setIsBuilderOpen(false)}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Builder...</div></div>}>
+        {isBuilderOpen && mode === ProjectMode.PROJECT && (
+            <PlacementCanvas
+                placement={placement}
+                availableDesigns={designs}
+                onSave={(layers) => {
+                    alert("Sleeve saved to project file.");
+                    setIsBuilderOpen(false);
+                }}
+                onClose={() => setIsBuilderOpen(false)}
+            />
+        )}
+      </Suspense>
 
       {/* Intake Waiver Overlay */}
-      {isWaiverOpen && (
-          <ClientWaiverModal 
-             onSign={(waiver) => {
-                 console.log("Waiver Signed:", waiver);
-                 setIsWaiverOpen(false);
-                 alert(`Waiver signed by ${waiver.clientName}`);
-             }}
-             onClose={() => setIsWaiverOpen(false)}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Waiver...</div></div>}>
+        {isWaiverOpen && (
+            <ClientWaiverModal
+                onSign={(waiver) => {
+                    console.log("Waiver Signed:", waiver);
+                    setIsWaiverOpen(false);
+                    alert(`Waiver signed by ${waiver.clientName}`);
+                }}
+                onClose={() => setIsWaiverOpen(false)}
+            />
+        )}
+      </Suspense>
     </div>
   );
 });
