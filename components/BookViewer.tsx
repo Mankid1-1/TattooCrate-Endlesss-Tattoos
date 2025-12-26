@@ -42,6 +42,15 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
     setFocusedId(id);
   }, []);
 
+  // Add Escape key listener to close modal
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFocusedId(null);
+    };
+    if (focusedId) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedId]);
+
   const handlePrint = (design?: DesignData) => {
     // Before printing, check if waiver is signed? 
     // In this app, we just allow printing, but maybe we should show a warning.
@@ -183,14 +192,16 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
                 </Tooltip>
 
                 {/* Main Image */}
-                <div className="flex-1 w-full h-full flex items-center justify-center relative">
+                <div className="flex-1 w-full h-full flex items-center justify-center relative" aria-live="polite">
                     <img 
                         src={focusedDesign.modifiedUrl || focusedDesign.originalUrl} 
+                        alt={focusedDesign.promptUsed || "Tattoo design detail view"}
                         className={`max-w-full max-h-full object-contain rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.5)] ${regeneratingId === focusedDesign.id ? 'opacity-50 blur-sm' : ''}`}
                     />
                     {regeneratingId === focusedDesign.id && (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent-gold border-t-transparent"></div>
+                            <span className="sr-only">Regenerating design...</span>
                         </div>
                     )}
                 </div>
