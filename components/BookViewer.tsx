@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { DesignData, AppTier, PaperSize, BodyPlacement, ProjectMode } from '../types';
 import { Printer, Download, RefreshCw, Edit3, X, Lock, Layers, Palette, FileSignature } from 'lucide-react';
-import { CreativeEditor } from './CreativeEditor';
-import { PlacementCanvas } from './PlacementCanvas';
-import { ClientWaiverModal } from './ClientWaiverModal';
 import { Tooltip } from './Tooltip';
 import { DesignCard } from './DesignCard';
 import { escapeHtml, isValidImageUrl } from '../services/security';
+
+// Lazy load heavy interactive components to improve initial load performance
+const CreativeEditor = React.lazy(() => import('./CreativeEditor').then(module => ({ default: module.CreativeEditor })));
+const PlacementCanvas = React.lazy(() => import('./PlacementCanvas').then(module => ({ default: module.PlacementCanvas })));
+const ClientWaiverModal = React.lazy(() => import('./ClientWaiverModal').then(module => ({ default: module.ClientWaiverModal })));
 
 interface DesignViewerProps {
   designs: DesignData[];
@@ -255,6 +257,7 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
 
       {/* Editor Overlay */}
       {isEditorOpen && focusedDesign && (
+        <Suspense fallback={<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 text-white font-bold">Loading Editor...</div>}>
           <CreativeEditor 
             pageId={focusedDesign.id}
             baseImage={focusedDesign.modifiedUrl || focusedDesign.originalUrl}
@@ -264,10 +267,12 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
                 setIsEditorOpen(false);
             }}
           />
+        </Suspense>
       )}
 
       {/* Sleeve Builder Overlay */}
       {isBuilderOpen && mode === ProjectMode.PROJECT && (
+        <Suspense fallback={<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 text-white font-bold">Loading Builder...</div>}>
           <PlacementCanvas 
             placement={placement}
             availableDesigns={designs}
@@ -277,10 +282,12 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             }}
             onClose={() => setIsBuilderOpen(false)}
           />
+        </Suspense>
       )}
 
       {/* Intake Waiver Overlay */}
       {isWaiverOpen && (
+        <Suspense fallback={<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 text-white font-bold">Loading Waiver...</div>}>
           <ClientWaiverModal 
              onSign={(waiver) => {
                  console.log("Waiver Signed:", waiver);
@@ -289,6 +296,7 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
              }}
              onClose={() => setIsWaiverOpen(false)}
           />
+        </Suspense>
       )}
     </div>
   );
