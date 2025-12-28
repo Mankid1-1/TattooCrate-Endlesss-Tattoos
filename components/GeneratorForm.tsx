@@ -40,6 +40,13 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
 
   const handleSubmit = () => {
     if (!concept) return;
+
+    // Security: Validate input length
+    if (concept.length > 500) {
+        alert("Concept too long. Please shorten it to under 500 characters.");
+        return;
+    }
+
     const size = mode === ProjectMode.SINGLE ? 1 : projectSize;
     onGenerate(concept, placement, style, size, mode);
   };
@@ -81,6 +88,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
               <input 
                 id={conceptInputId}
                 type="text" 
+                maxLength={500}
                 value={concept}
                 onChange={(e) => setConcept(e.target.value)}
                 placeholder={mode === ProjectMode.PROJECT ? "e.g. Ocean theme sleeve with ships and kraken..." : "e.g. A roaring tiger, black and grey..."}
