@@ -227,6 +227,13 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
 
   const addText = () => {
       if (!textInput.trim()) return;
+
+      // Security: Validate text length
+      if (textInput.length > 50) {
+          alert("Text too long. Max 50 characters.");
+          return;
+      }
+
       const canvas = canvasRef.current;
       setItems([...items, {
         id: Date.now().toString(),
@@ -332,7 +339,8 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
                 {tool === 'text' && (
                     <div className="flex gap-2">
                         <input 
-                            value={textInput} 
+                            value={textInput}
+                            maxLength={50}
                             onChange={e => setTextInput(e.target.value)} 
                             className="flex-1 bg-ink-800 border border-ink-600 rounded px-4 py-2 outline-none focus:border-accent-gold text-white"
                             placeholder="Enter text..."
