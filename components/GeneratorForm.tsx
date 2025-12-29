@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
-import { BodyPlacement, AppTier, TattooStyle, CollectionSize, ProjectMode } from '../types';
-import { Sparkles, Zap, Lock, Layers, Palette } from 'lucide-react';
+import { BodyPlacement, AppTier, TattooStyle, ProjectMode } from '../types';
+import { Sparkles, Zap, Lock, Layers } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { StyleGrid } from './StyleGrid';
+import { InspirationRail } from './InspirationRail';
+import { PlacementGrid } from './PlacementGrid';
 
 interface GeneratorFormProps {
   onGenerate: (concept: string, placement: BodyPlacement, style: TattooStyle, size: number, mode: ProjectMode) => void;
@@ -11,25 +13,6 @@ interface GeneratorFormProps {
   tier: AppTier;
   onUpgrade: () => void;
 }
-
-const INSPIRATION_PROMPTS = [
-  { emoji: '💀', text: 'Geometric Skull & Roses' },
-  { emoji: '🐉', text: 'Japanese Dragon Sleeve' },
-  { emoji: '⚓', text: 'Traditional Anchor & Swallow' },
-  { emoji: '🐺', text: 'Realistic Wolf in Forest' },
-  { emoji: '🗡️', text: 'Dagger through Heart' },
-  { emoji: '👁️', text: 'Abstract Cyberpunk Eye' },
-];
-
-const PLACEMENT_ICONS: Record<BodyPlacement, string> = {
-  [BodyPlacement.PAPER]: '📄',
-  [BodyPlacement.ARM]: '💪',
-  [BodyPlacement.LEG]: '🦵',
-  [BodyPlacement.BACK]: '🔙',
-  [BodyPlacement.CHEST]: '👕',
-  [BodyPlacement.HAND]: '✋',
-  [BodyPlacement.NECK]: '👤',
-};
 
 export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoading, tier, onUpgrade }) => {
   const [concept, setConcept] = useState('');
@@ -94,19 +77,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
           </Tooltip>
 
           {/* Inspiration Rail */}
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-            {INSPIRATION_PROMPTS.map((prompt) => (
-              <Tooltip key={prompt.text} content="Use this concept">
-                <button
-                  onClick={() => setConcept(prompt.text)}
-                  className="snap-start flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-ink-900 border border-ink-700 rounded-md hover:border-accent-gold/50 hover:text-accent-gold transition-all text-xs font-bold text-ink-400 shadow-sm active:scale-95 uppercase tracking-wide"
-                >
-                  <span>{prompt.emoji}</span>
-                  <span>{prompt.text}</span>
-                </button>
-              </Tooltip>
-            ))}
-          </div>
+          <InspirationRail onSelect={setConcept} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -120,25 +91,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 <span className="text-accent-gold">02.</span>
                 <span>{mode === ProjectMode.PROJECT ? 'Sleeve Canvas' : 'Placement'}</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.values(BodyPlacement).filter(p => mode === ProjectMode.SINGLE ? true : p !== BodyPlacement.PAPER).map((place) => (
-                  <Tooltip key={place} content={`Select ${place}`} className="w-full h-full">
-                    <button
-                      aria-pressed={placement === place}
-                      aria-label={`Select ${place} placement`}
-                      onClick={() => setPlacement(place)}
-                      className={`w-full h-full px-3 py-3 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
-                        placement === place 
-                          ? 'border-accent-gold bg-accent-gold/10 text-accent-gold' 
-                          : 'border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500'
-                      }`}
-                    >
-                      <span className="text-lg">{PLACEMENT_ICONS[place]}</span>
-                      {place.split(' (')[0].split(' / ')[0]}
-                    </button>
-                  </Tooltip>
-                ))}
-              </div>
+              <PlacementGrid selectedPlacement={placement} mode={mode} onSelect={setPlacement} />
             </div>
 
             {/* Complexity / Size */}
