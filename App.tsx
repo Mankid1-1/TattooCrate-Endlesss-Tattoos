@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { BodyPlacement, AppTier, TattooStyle, CollectionSize, DesignData, PortfolioState, AppView, AppSettings, PaperSize, ProjectMode } from './types';
 import { generateTattooDesign } from './services/geminiService';
 import { purchaseSubscription, restorePurchases, setPurchaseFlag } from './services/storeService';
-import { LoadingOverlay } from './components/LoadingOverlay';
-import { UpgradeModal } from './components/UpgradeModal';
 import { GeneratorForm } from './components/GeneratorForm';
 import { Tooltip } from './components/Tooltip';
 import { Settings as SettingsIcon, Home, Zap, Lock } from 'lucide-react';
@@ -12,6 +10,9 @@ import { useClientConfig } from './hooks/useClientConfig';
 // Lazy load components
 const BookViewer = React.lazy(() => import('./components/BookViewer'));
 const SettingsView = React.lazy(() => import('./components/SettingsView'));
+// Optimization: Lazy load heavy overlays to reduce initial bundle size and split chunks
+const UpgradeModal = React.lazy(() => import('./components/UpgradeModal').then(module => ({ default: module.UpgradeModal })));
+const LoadingOverlay = React.lazy(() => import('./components/LoadingOverlay').then(module => ({ default: module.LoadingOverlay })));
 
 const App: React.FC = () => {
   const clientConfig = useClientConfig();
@@ -369,14 +370,18 @@ const App: React.FC = () => {
       </main>
 
       {/* Overlays */}
-      {loading && <LoadingOverlay current={loadingProgress?.current} total={loadingProgress?.total} />}
-      
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onClose={handleCloseUpgradeModal}
-        onUpgrade={handleUpgrade}
-        onRestore={handleRestore}
-      />
+      <Suspense fallback={null}>
+        {loading && <LoadingOverlay current={loadingProgress?.current} total={loadingProgress?.total} />}
+
+        {showUpgradeModal && (
+          <UpgradeModal
+            isOpen={showUpgradeModal}
+            onClose={handleCloseUpgradeModal}
+            onUpgrade={handleUpgrade}
+            onRestore={handleRestore}
+          />
+        )}
+      </Suspense>
 
       {/* Powered by TattooCrate Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-ink-950/90 backdrop-blur border-t border-ink-800 py-2 px-4 flex items-center justify-center gap-2 z-50">
