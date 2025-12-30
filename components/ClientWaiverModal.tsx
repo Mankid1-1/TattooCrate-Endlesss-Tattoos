@@ -86,6 +86,7 @@ export const ClientWaiverModal: React.FC<ClientWaiverModalProps> = ({ onSign, on
                         <label className="block text-xs font-bold uppercase mb-1">Date of Birth</label>
                         <input 
                             type="date" 
+                            max={new Date().toISOString().split('T')[0]}
                             className="w-full border-b border-black bg-gray-50 px-2 py-1 outline-none focus:bg-yellow-50"
                             value={formData.dob}
                             onChange={e => setFormData({...formData, dob: e.target.value})}

@@ -41,6 +41,13 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
 
   const handleSubmit = () => {
     if (!concept) return;
+
+    // Security: Validate input length to prevent DoS
+    if (concept.length > 500) {
+      alert("Concept description is too long. Please keep it under 500 characters.");
+      return;
+    }
+
     const size = mode === ProjectMode.SINGLE ? 1 : projectSize;
     onGenerate(concept, placement, style, size, mode);
   };
@@ -82,7 +89,11 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
               <input 
                 id={conceptInputId}
                 type="text" 
+ sentinel-input-limits-17124088429024588354
+                maxLength={500}
+
                 maxLength={1000}
+ ZenBeasts
                 value={concept}
                 onChange={(e) => {
                   if (e.target.value.length <= 1000) setConcept(e.target.value);
@@ -93,6 +104,9 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-600 pointer-events-none group-focus-within:text-accent-gold transition-colors">
                 <Sparkles className="w-5 h-5" />
               </div>
+            </div>
+            <div className="text-right text-[10px] text-ink-500 mt-1 font-mono">
+                {concept.length}/500
             </div>
           </Tooltip>
 
