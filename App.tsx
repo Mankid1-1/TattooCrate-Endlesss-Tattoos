@@ -20,19 +20,41 @@ const App: React.FC = () => {
   const isOnline = clientConfig.mode === 'online';
 
   // Global State
-  const [tier, setTier] = useState<AppTier>(AppTier.FREE);
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [tier, setTier] = useState<AppTier>(() => {
+    const hasPurchased = localStorage.getItem('tc_has_purchased') === 'true';
+    return hasPurchased ? AppTier.PRO : AppTier.FREE;
+  });
+
   const [view, setView] = useState<AppView>('home');
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<{current: number, total: number} | undefined>(undefined);
   
   // Settings State
-  const [appSettings, setAppSettings] = useState<AppSettings>({
-    paperSize: PaperSize.A4,
-    defaultPlacement: BodyPlacement.PAPER
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => {
+    const savedSettings = localStorage.getItem('tc_app_settings');
+    if (savedSettings) {
+      try {
+        return JSON.parse(savedSettings);
+      } catch(e) { console.error("Failed to load settings"); }
+    }
+    return {
+      paperSize: PaperSize.A4,
+      defaultPlacement: BodyPlacement.PAPER
+    };
   });
 
   // Portfolio Data
-  const [portfolioState, setPortfolioState] = useState<PortfolioState>({
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [portfolioState, setPortfolioState] = useState<PortfolioState>(() => {
+    const savedPortfolio = localStorage.getItem('tc_portfolio_state');
+    if (savedPortfolio) {
+      try {
+        return JSON.parse(savedPortfolio);
+      } catch (e) { console.error("Failed to load portfolio"); }
+    }
+    return {
       concept: '',
       placement: BodyPlacement.PAPER,
       style: TattooStyle.TRADITIONAL,
@@ -40,6 +62,7 @@ const App: React.FC = () => {
       lastUpdated: 0,
       mode: ProjectMode.SINGLE,
       projectLayers: []
+    };
   });
 
   // UI
@@ -55,34 +78,16 @@ const App: React.FC = () => {
     setShowUpgradeModal(false);
   }, []);
 
-  // Load persistence
-  useEffect(() => {
-      const savedPortfolio = localStorage.getItem('tc_portfolio_state');
-      if (savedPortfolio) {
-          try {
-              setPortfolioState(JSON.parse(savedPortfolio));
-          } catch (e) { console.error("Failed to load portfolio"); }
-      }
-
-      const savedSettings = localStorage.getItem('tc_app_settings');
-      if (savedSettings) {
-          try {
-              setAppSettings(JSON.parse(savedSettings));
-          } catch(e) { console.error("Failed to load settings"); }
-      }
-
-      const hasPurchased = localStorage.getItem('tc_has_purchased') === 'true';
-      if (hasPurchased) setTier(AppTier.PRO);
-
-      checkApiKey();
-  }, []);
-
   const checkApiKey = async () => {
     if (window.aistudio && window.aistudio.hasSelectedApiKey) {
       const hasKey = await window.aistudio.hasSelectedApiKey();
       if (!hasKey) console.log("No API Key selected yet.");
     }
   };
+
+  useEffect(() => {
+      checkApiKey();
+  }, []);
 
   useEffect(() => {
       if (portfolioState.designs.length > 0) {
