@@ -333,7 +333,10 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
                     <div className="flex gap-2">
                         <input 
                             value={textInput} 
-                            onChange={e => setTextInput(e.target.value)} 
+                            maxLength={50}
+                            onChange={e => {
+                                if (e.target.value.length <= 50) setTextInput(e.target.value);
+                            }}
                             className="flex-1 bg-ink-800 border border-ink-600 rounded px-4 py-2 outline-none focus:border-accent-gold text-white"
                             placeholder="Enter text..."
                         />

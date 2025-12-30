@@ -82,8 +82,11 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
               <input 
                 id={conceptInputId}
                 type="text" 
+                maxLength={1000}
                 value={concept}
-                onChange={(e) => setConcept(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 1000) setConcept(e.target.value);
+                }}
                 placeholder={mode === ProjectMode.PROJECT ? "e.g. Ocean theme sleeve with ships and kraken..." : "e.g. A roaring tiger, black and grey..."}
                 className="w-full px-6 py-5 rounded-lg bg-ink-900 border border-ink-600 focus:border-accent-gold focus:ring-1 focus:ring-accent-gold outline-none transition-all text-lg font-medium text-white placeholder:text-ink-600"
               />
