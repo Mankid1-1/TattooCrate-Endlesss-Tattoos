@@ -36,13 +36,26 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ current, total }
         </div>
       </div>
       
-      <h3 className="text-xl font-display font-bold text-white animate-pulse text-center tracking-widest uppercase">{MESSAGES[msgIndex]}</h3>
+      <h3
+        className="text-xl font-display font-bold text-white animate-pulse text-center tracking-widest uppercase"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {MESSAGES[msgIndex]}
+      </h3>
       
       {total && total > 1 && current && (
-        <div className="mt-8 w-full max-w-xs">
+        <div
+          className="mt-8 w-full max-w-xs"
+          role="progressbar"
+          aria-valuenow={current}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-label="Generation progress"
+        >
             <div className="flex justify-between text-[10px] font-bold text-ink-500 mb-2 uppercase tracking-wider">
-                <span>Generating Collection</span>
-                <span>{current} / {total}</span>
+                <span aria-hidden="true">Generating Collection</span>
+                <span aria-hidden="true">{current} / {total}</span>
             </div>
             <div className="h-1 w-full bg-ink-800 rounded-full overflow-hidden">
                 <div 
