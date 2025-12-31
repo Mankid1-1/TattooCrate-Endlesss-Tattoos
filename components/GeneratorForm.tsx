@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
-import { BodyPlacement, AppTier, TattooStyle, CollectionSize, ProjectMode } from '../types';
-import { Sparkles, Zap, Lock, Layers, Palette } from 'lucide-react';
+import { BodyPlacement, AppTier, TattooStyle, ProjectMode } from '../types';
+import { Sparkles, Zap, Lock, Layers } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { StyleGrid } from './StyleGrid';
+import { InspirationRail } from './InspirationRail';
+import { PlacementGrid } from './PlacementGrid';
 
 interface GeneratorFormProps {
   onGenerate: (concept: string, placement: BodyPlacement, style: TattooStyle, size: number, mode: ProjectMode) => void;
@@ -10,25 +13,6 @@ interface GeneratorFormProps {
   tier: AppTier;
   onUpgrade: () => void;
 }
-
-const INSPIRATION_PROMPTS = [
-  { emoji: '💀', text: 'Geometric Skull & Roses' },
-  { emoji: '🐉', text: 'Japanese Dragon Sleeve' },
-  { emoji: '⚓', text: 'Traditional Anchor & Swallow' },
-  { emoji: '🐺', text: 'Realistic Wolf in Forest' },
-  { emoji: '🗡️', text: 'Dagger through Heart' },
-  { emoji: '👁️', text: 'Abstract Cyberpunk Eye' },
-];
-
-const PLACEMENT_ICONS: Record<BodyPlacement, string> = {
-  [BodyPlacement.PAPER]: '📄',
-  [BodyPlacement.ARM]: '💪',
-  [BodyPlacement.LEG]: '🦵',
-  [BodyPlacement.BACK]: '🔙',
-  [BodyPlacement.CHEST]: '👕',
-  [BodyPlacement.HAND]: '✋',
-  [BodyPlacement.NECK]: '👤',
-};
 
 export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoading, tier, onUpgrade }) => {
   const [concept, setConcept] = useState('');
@@ -40,10 +24,21 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
   const conceptInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
+ palette-generator-ux-14832640893578868664
     if (!concept) {
       conceptInputRef.current?.focus();
       return;
     }
+
+    if (!concept) return;
+
+    // Security: Validate input length to prevent DoS
+    if (concept.length > 500) {
+      alert("Concept description is too long. Please keep it under 500 characters.");
+      return;
+    }
+
+ ZenBeasts
     const size = mode === ProjectMode.SINGLE ? 1 : projectSize;
     onGenerate(concept, placement, style, size, mode);
   };
@@ -86,8 +81,15 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 ref={conceptInputRef}
                 id={conceptInputId}
                 type="text" 
+ sentinel-input-limits-17124088429024588354
+                maxLength={500}
+
+                maxLength={1000}
+ ZenBeasts
                 value={concept}
-                onChange={(e) => setConcept(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 1000) setConcept(e.target.value);
+                }}
                 placeholder={mode === ProjectMode.PROJECT ? "e.g. Ocean theme sleeve with ships and kraken..." : "e.g. A roaring tiger, black and grey..."}
                 className="w-full px-6 py-5 rounded-lg bg-ink-900 border border-ink-600 focus:border-accent-gold focus:ring-1 focus:ring-accent-gold outline-none transition-all text-lg font-medium text-white placeholder:text-ink-600"
               />
@@ -95,22 +97,13 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 <Sparkles className="w-5 h-5" />
               </div>
             </div>
+            <div className="text-right text-[10px] text-ink-500 mt-1 font-mono">
+                {concept.length}/500
+            </div>
           </Tooltip>
 
           {/* Inspiration Rail */}
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-            {INSPIRATION_PROMPTS.map((prompt) => (
-              <Tooltip key={prompt.text} content="Use this concept">
-                <button
-                  onClick={() => setConcept(prompt.text)}
-                  className="snap-start flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-ink-900 border border-ink-700 rounded-md hover:border-accent-gold/50 hover:text-accent-gold transition-all text-xs font-bold text-ink-400 shadow-sm active:scale-95 uppercase tracking-wide"
-                >
-                  <span>{prompt.emoji}</span>
-                  <span>{prompt.text}</span>
-                </button>
-              </Tooltip>
-            ))}
-          </div>
+          <InspirationRail onSelect={setConcept} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -124,25 +117,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 <span className="text-accent-gold">02.</span>
                 <span>{mode === ProjectMode.PROJECT ? 'Sleeve Canvas' : 'Placement'}</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.values(BodyPlacement).filter(p => mode === ProjectMode.SINGLE ? true : p !== BodyPlacement.PAPER).map((place) => (
-                  <Tooltip key={place} content={`Select ${place}`} className="w-full h-full">
-                    <button
-                      aria-pressed={placement === place}
-                      aria-label={`Select ${place} placement`}
-                      onClick={() => setPlacement(place)}
-                      className={`w-full h-full px-3 py-3 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
-                        placement === place 
-                          ? 'border-accent-gold bg-accent-gold/10 text-accent-gold' 
-                          : 'border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500'
-                      }`}
-                    >
-                      <span className="text-lg">{PLACEMENT_ICONS[place]}</span>
-                      {place.split(' (')[0].split(' / ')[0]}
-                    </button>
-                  </Tooltip>
-                ))}
-              </div>
+              <PlacementGrid selectedPlacement={placement} mode={mode} onSelect={setPlacement} />
             </div>
 
             {/* Complexity / Size */}
@@ -190,29 +165,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 <span className="text-accent-gold">04.</span>
                 <span>Tattoo Style</span>
             </label>
-            <div className="grid grid-cols-2 gap-2 h-64 overflow-y-auto pr-1 custom-scrollbar">
-                {Object.values(TattooStyle).map((s) => (
-                    <Tooltip key={s} content={s} position="top" className="w-full">
-                      <button 
-                          aria-pressed={style === s}
-                          aria-label={`Select ${s} style`}
-                          onClick={() => setStyle(s)}
-                          className={`w-full p-3 rounded-lg border text-left transition-all group ${
-                              style === s 
-                              ? 'border-accent-gold bg-accent-gold/10' 
-                              : 'border-ink-700 bg-ink-900 hover:border-ink-500'
-                          }`}
-                      >
-                          <div className={`w-full h-12 rounded bg-ink-950 overflow-hidden relative mb-2 flex items-center justify-center ${style === s ? 'ring-1 ring-accent-gold' : ''}`}>
-                             <span className="text-2xl filter grayscale contrast-125 group-hover:filter-none transition-all">{getStyleEmoji(s)}</span>
-                          </div>
-                          <span className={`text-[10px] uppercase font-bold tracking-wider ${style === s ? 'text-accent-gold' : 'text-ink-400'}`}>
-                              {s.split(' ')[0]}
-                          </span>
-                      </button>
-                    </Tooltip>
-                ))}
-            </div>
+            <StyleGrid selectedStyle={style} onSelect={setStyle} />
           </div>
         </div>
 
@@ -250,26 +203,3 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
 });
 
 GeneratorForm.displayName = 'GeneratorForm';
-
-// Helper for style visuals
-const getStyleEmoji = (style: TattooStyle) => {
-    switch(style) {
-        case TattooStyle.TRADITIONAL: return '⚓';
-        case TattooStyle.NEO_TRADITIONAL: return '🦅';
-        case TattooStyle.JAPANESE: return '👹';
-        case TattooStyle.BLACK_GREY: return '🎭';
-        case TattooStyle.NEW_SCHOOL: return '🛹';
-        case TattooStyle.BIOMECHANICAL: return '🦾';
-        case TattooStyle.TRASH_POLKA: return '🔴';
-        case TattooStyle.WATERCOLOR: return '🎨';
-        case TattooStyle.GEOMETRIC: return '📐';
-        case TattooStyle.TRIBAL: return '🗿';
-        case TattooStyle.BLACKWORK: return '⚫';
-        case TattooStyle.REALISM: return '📸';
-        case TattooStyle.FINE_LINE: return '✨';
-        case TattooStyle.IGNORANT: return '🖍️';
-        case TattooStyle.SKETCH: return '✏️';
-        case TattooStyle.GLITCH: return '📺';
-        default: return '🖋️';
-    }
-}

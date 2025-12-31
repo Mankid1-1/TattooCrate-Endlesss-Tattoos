@@ -21,6 +21,10 @@ export const ClientWaiverModal: React.FC<ClientWaiverModalProps> = ({ onSign, on
 
   const isFormValid = formData.name && formData.dob && formData.signature.length > 2;
 
+  const nameId = React.useId();
+  const dobId = React.useId();
+  const signatureId = React.useId();
+
   const handleSubmit = () => {
     if (!isFormValid) return;
     
@@ -72,8 +76,9 @@ export const ClientWaiverModal: React.FC<ClientWaiverModalProps> = ({ onSign, on
                 <h3 className="font-bold border-b border-gray-300 pb-1 uppercase text-sm">1. Client Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-xs font-bold uppercase mb-1">Client Name</label>
+                        <label htmlFor={nameId} className="block text-xs font-bold uppercase mb-1">Client Name</label>
                         <input 
+                            id={nameId}
                             type="text" 
                             maxLength={100}
                             className="w-full border-b border-black bg-gray-50 px-2 py-1 outline-none focus:bg-yellow-50"
@@ -83,9 +88,11 @@ export const ClientWaiverModal: React.FC<ClientWaiverModalProps> = ({ onSign, on
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold uppercase mb-1">Date of Birth</label>
+                        <label htmlFor={dobId} className="block text-xs font-bold uppercase mb-1">Date of Birth</label>
                         <input 
+                            id={dobId}
                             type="date" 
+                            max={new Date().toISOString().split('T')[0]}
                             className="w-full border-b border-black bg-gray-50 px-2 py-1 outline-none focus:bg-yellow-50"
                             value={formData.dob}
                             onChange={e => setFormData({...formData, dob: e.target.value})}
@@ -134,10 +141,11 @@ export const ClientWaiverModal: React.FC<ClientWaiverModalProps> = ({ onSign, on
                 </div>
 
                 <div className="mt-4">
-                     <label className="block text-xs font-bold uppercase mb-2">Client Signature (Type Full Name)</label>
+                     <label htmlFor={signatureId} className="block text-xs font-bold uppercase mb-2">Client Signature (Type Full Name)</label>
                      <div className="relative">
                         <PenTool className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input 
+                            id={signatureId}
                             type="text" 
                             maxLength={100}
                             className="w-full border-2 border-gray-300 rounded p-3 pl-10 font-script text-2xl focus:border-black outline-none"

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { BodyPlacement, AppTier, TattooStyle, CollectionSize, DesignData, PortfolioState, AppView, AppSettings, PaperSize, ProjectMode } from './types';
 import { generateTattooDesign } from './services/geminiService';
 import { purchaseSubscription, restorePurchases, setPurchaseFlag } from './services/storeService';
-import { LoadingOverlay } from './components/LoadingOverlay';
-import { UpgradeModal } from './components/UpgradeModal';
 import { GeneratorForm } from './components/GeneratorForm';
 import { Tooltip } from './components/Tooltip';
 import { Settings as SettingsIcon, Home, Zap, Lock } from 'lucide-react';
@@ -12,6 +10,9 @@ import { useClientConfig } from './hooks/useClientConfig';
 // Lazy load components
 const BookViewer = React.lazy(() => import('./components/BookViewer'));
 const SettingsView = React.lazy(() => import('./components/SettingsView'));
+// Optimization: Lazy load heavy overlays to reduce initial bundle size and split chunks
+const UpgradeModal = React.lazy(() => import('./components/UpgradeModal').then(module => ({ default: module.UpgradeModal })));
+const LoadingOverlay = React.lazy(() => import('./components/LoadingOverlay').then(module => ({ default: module.LoadingOverlay })));
 
 const App: React.FC = () => {
   const clientConfig = useClientConfig();
@@ -19,19 +20,41 @@ const App: React.FC = () => {
   const isOnline = clientConfig.mode === 'online';
 
   // Global State
-  const [tier, setTier] = useState<AppTier>(AppTier.FREE);
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [tier, setTier] = useState<AppTier>(() => {
+    const hasPurchased = localStorage.getItem('tc_has_purchased') === 'true';
+    return hasPurchased ? AppTier.PRO : AppTier.FREE;
+  });
+
   const [view, setView] = useState<AppView>('home');
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<{current: number, total: number} | undefined>(undefined);
   
   // Settings State
-  const [appSettings, setAppSettings] = useState<AppSettings>({
-    paperSize: PaperSize.A4,
-    defaultPlacement: BodyPlacement.PAPER
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => {
+    const savedSettings = localStorage.getItem('tc_app_settings');
+    if (savedSettings) {
+      try {
+        return JSON.parse(savedSettings);
+      } catch(e) { console.error("Failed to load settings"); }
+    }
+    return {
+      paperSize: PaperSize.A4,
+      defaultPlacement: BodyPlacement.PAPER
+    };
   });
 
   // Portfolio Data
-  const [portfolioState, setPortfolioState] = useState<PortfolioState>({
+  // Optimization: Lazy init to avoid re-renders on mount
+  const [portfolioState, setPortfolioState] = useState<PortfolioState>(() => {
+    const savedPortfolio = localStorage.getItem('tc_portfolio_state');
+    if (savedPortfolio) {
+      try {
+        return JSON.parse(savedPortfolio);
+      } catch (e) { console.error("Failed to load portfolio"); }
+    }
+    return {
       concept: '',
       placement: BodyPlacement.PAPER,
       style: TattooStyle.TRADITIONAL,
@@ -39,6 +62,7 @@ const App: React.FC = () => {
       lastUpdated: 0,
       mode: ProjectMode.SINGLE,
       projectLayers: []
+    };
   });
 
   // UI
@@ -54,34 +78,16 @@ const App: React.FC = () => {
     setShowUpgradeModal(false);
   }, []);
 
-  // Load persistence
-  useEffect(() => {
-      const savedPortfolio = localStorage.getItem('tc_portfolio_state');
-      if (savedPortfolio) {
-          try {
-              setPortfolioState(JSON.parse(savedPortfolio));
-          } catch (e) { console.error("Failed to load portfolio"); }
-      }
-
-      const savedSettings = localStorage.getItem('tc_app_settings');
-      if (savedSettings) {
-          try {
-              setAppSettings(JSON.parse(savedSettings));
-          } catch(e) { console.error("Failed to load settings"); }
-      }
-
-      const hasPurchased = localStorage.getItem('tc_has_purchased') === 'true';
-      if (hasPurchased) setTier(AppTier.PRO);
-
-      checkApiKey();
-  }, []);
-
   const checkApiKey = async () => {
     if (window.aistudio && window.aistudio.hasSelectedApiKey) {
       const hasKey = await window.aistudio.hasSelectedApiKey();
       if (!hasKey) console.log("No API Key selected yet.");
     }
   };
+
+  useEffect(() => {
+      checkApiKey();
+  }, []);
 
   useEffect(() => {
       if (portfolioState.designs.length > 0) {
@@ -369,14 +375,18 @@ const App: React.FC = () => {
       </main>
 
       {/* Overlays */}
-      {loading && <LoadingOverlay current={loadingProgress?.current} total={loadingProgress?.total} />}
-      
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onClose={handleCloseUpgradeModal}
-        onUpgrade={handleUpgrade}
-        onRestore={handleRestore}
-      />
+      <Suspense fallback={null}>
+        {loading && <LoadingOverlay current={loadingProgress?.current} total={loadingProgress?.total} />}
+
+        {showUpgradeModal && (
+          <UpgradeModal
+            isOpen={showUpgradeModal}
+            onClose={handleCloseUpgradeModal}
+            onUpgrade={handleUpgrade}
+            onRestore={handleRestore}
+          />
+        )}
+      </Suspense>
 
       {/* Powered by TattooCrate Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-ink-950/90 backdrop-blur border-t border-ink-800 py-2 px-4 flex items-center justify-center gap-2 z-50">

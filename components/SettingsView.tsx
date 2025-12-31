@@ -81,12 +81,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     <p className="text-xs text-ink-500">Format for flash sheets</p>
                  </div>
               </div>
-              <div className="flex bg-ink-900 p-1 rounded-lg border border-ink-700">
+              <div
+                className="flex bg-ink-900 p-1 rounded-lg border border-ink-700"
+                role="group"
+                aria-label="Stencil Paper Size"
+              >
                  {Object.values(PaperSize).map(size => (
                     <button
                       key={size}
+                      type="button"
+                      aria-pressed={settings.paperSize === size}
                       onClick={() => onUpdateSettings({ ...settings, paperSize: size })}
-                      className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${
+                      className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-accent-gold ${
                          settings.paperSize === size 
                          ? 'bg-ink-700 text-white shadow-sm' 
                          : 'text-ink-500 hover:text-ink-300'
@@ -110,6 +116,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                  </div>
               </div>
               <select 
+                aria-label="Default Placement"
                 value={settings.defaultPlacement}
                 onChange={(e) => onUpdateSettings({...settings, defaultPlacement: e.target.value as BodyPlacement})}
                 className="bg-ink-900 border border-ink-700 text-white text-sm font-bold rounded-lg focus:ring-accent-gold focus:border-accent-gold block p-2.5 outline-none"

@@ -1,9 +1,3 @@
-# Palette's Journal - Critical Learnings
-
-## 2024-05-22 - [Initial Setup]
-**Learning:** UX is a continuous process.
-**Action:** Starting to log critical learnings.
-
-## 2024-05-22 - [Tooltip Accessibility]
-**Learning:** React's `onFocus` event on a wrapper `div` successfully bubbles up from interactive children, making it an effective way to trigger visibility for tooltips without modifying every child component. This simple change drastically improves keyboard accessibility for sighted users.
-**Action:** When creating wrapper components that provide contextual information, always consider keyboard focus in addition to mouse hover.
+## 2024-05-23 - Accessibility Patterns for Settings
+**Learning:** Using `role="group"` combined with `aria-pressed` on buttons is a clean, accessible pattern for "segment controls" or toggle groups where visual design (buttons) differs from semantic structure (radio buttons). It avoids the need to restyle native radio inputs while preserving semantic meaning for screen readers.
+**Action:** Apply this pattern to other button-based selection groups (like Tattoo Mode or Tier Selection) instead of custom divs or unsemantic buttons.

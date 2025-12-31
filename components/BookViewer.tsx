@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { DesignData, AppTier, PaperSize, BodyPlacement, ProjectMode } from '../types';
 import { Printer, Download, RefreshCw, Edit3, X, Lock, Layers, Palette, FileSignature } from 'lucide-react';
-import { CreativeEditor } from './CreativeEditor';
-import { PlacementCanvas } from './PlacementCanvas';
-import { ClientWaiverModal } from './ClientWaiverModal';
 import { Tooltip } from './Tooltip';
 import { DesignCard } from './DesignCard';
 import { escapeHtml, isValidImageUrl } from '../services/security';
+
+// Lazy load large modal components
+const CreativeEditor = React.lazy(() => import('./CreativeEditor').then(module => ({ default: module.CreativeEditor })));
+const PlacementCanvas = React.lazy(() => import('./PlacementCanvas').then(module => ({ default: module.PlacementCanvas })));
+const ClientWaiverModal = React.lazy(() => import('./ClientWaiverModal').then(module => ({ default: module.ClientWaiverModal })));
 
 interface DesignViewerProps {
   designs: DesignData[];
@@ -42,6 +44,15 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
     setFocusedId(id);
   }, []);
 
+  // Add Escape key listener to close modal
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFocusedId(null);
+    };
+    if (focusedId) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedId]);
+
   const handlePrint = (design?: DesignData) => {
     // Before printing, check if waiver is signed? 
     // In this app, we just allow printing, but maybe we should show a warning.
@@ -52,13 +63,17 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
     // Security: Escape user input to prevent XSS in the new window
     const safeConcept = escapeHtml(concept);
 
+    // Security: Validate paperSize against enum to prevent CSS injection
+    const validSizes = Object.values(PaperSize);
+    const safePaperSize = validSizes.includes(paperSize) ? paperSize : PaperSize.A4;
+
     printWindow.document.write(`
       <html>
         <head>
           <title>${safeConcept} - Tattoo Flash</title>
           <style>
             @media print {
-               @page { size: ${paperSize.toLowerCase()}; margin: 0; }
+               @page { size: ${safePaperSize.toLowerCase()}; margin: 0; }
                body { margin: 0; padding: 0; font-family: 'Courier New', monospace; }
                .page { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; page-break-after: always; }
                img { max-width: 80%; max-height: 80%; object-fit: contain; filter: grayscale(100%) contrast(150%); }
@@ -66,14 +81,14 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
             }
             body { background: #fff; color: #000; text-align: center; }
             .no-print { padding: 20px; background: #000; color: #fff; margin-bottom: 20px; }
-            .page { border: 1px solid #eee; margin: 20px auto; width: ${paperSize === PaperSize.A4 ? '210mm' : '8.5in'}; height: ${paperSize === PaperSize.A4 ? '297mm' : '11in'}; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+            .page { border: 1px solid #eee; margin: 20px auto; width: ${safePaperSize === PaperSize.A4 ? '210mm' : '8.5in'}; height: ${safePaperSize === PaperSize.A4 ? '297mm' : '11in'}; display: flex; align-items: center; justify-content: center; flex-direction: column; }
             img { max-width: 90%; max-height: 85%; }
           </style>
         </head>
         <body>
           <div class="no-print">
             <h1>TATTOO STENCIL READY</h1>
-            <p>Print scale set to ${paperSize}. Contrast boosted for transfer.</p>
+            <p>Print scale set to ${escapeHtml(safePaperSize)}. Contrast boosted for transfer.</p>
           </div>
           ${list.map(p => {
              const url = p.modifiedUrl || p.originalUrl;
@@ -183,14 +198,16 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
                 </Tooltip>
 
                 {/* Main Image */}
-                <div className="flex-1 w-full h-full flex items-center justify-center relative">
+                <div className="flex-1 w-full h-full flex items-center justify-center relative" aria-live="polite">
                     <img 
                         src={focusedDesign.modifiedUrl || focusedDesign.originalUrl} 
+                        alt={focusedDesign.promptUsed || "Tattoo design detail view"}
                         className={`max-w-full max-h-full object-contain rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.5)] ${regeneratingId === focusedDesign.id ? 'opacity-50 blur-sm' : ''}`}
                     />
                     {regeneratingId === focusedDesign.id && (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent-gold border-t-transparent"></div>
+                            <span className="sr-only">Regenerating design...</span>
                         </div>
                     )}
                 </div>
@@ -254,42 +271,48 @@ export const BookViewer: React.FC<DesignViewerProps> = React.memo(({
       )}
 
       {/* Editor Overlay */}
-      {isEditorOpen && focusedDesign && (
-          <CreativeEditor 
-            pageId={focusedDesign.id}
-            baseImage={focusedDesign.modifiedUrl || focusedDesign.originalUrl}
-            onClose={() => setIsEditorOpen(false)}
-            onSave={(newUrl) => {
-                onUpdatePage(focusedDesign.id, newUrl);
-                setIsEditorOpen(false);
-            }}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Editor...</div></div>}>
+        {isEditorOpen && focusedDesign && (
+            <CreativeEditor
+                pageId={focusedDesign.id}
+                baseImage={focusedDesign.modifiedUrl || focusedDesign.originalUrl}
+                onClose={() => setIsEditorOpen(false)}
+                onSave={(newUrl) => {
+                    onUpdatePage(focusedDesign.id, newUrl);
+                    setIsEditorOpen(false);
+                }}
+            />
+        )}
+      </Suspense>
 
       {/* Sleeve Builder Overlay */}
-      {isBuilderOpen && mode === ProjectMode.PROJECT && (
-          <PlacementCanvas 
-            placement={placement}
-            availableDesigns={designs}
-            onSave={(layers) => {
-                alert("Sleeve saved to project file.");
-                setIsBuilderOpen(false);
-            }}
-            onClose={() => setIsBuilderOpen(false)}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Builder...</div></div>}>
+        {isBuilderOpen && mode === ProjectMode.PROJECT && (
+            <PlacementCanvas
+                placement={placement}
+                availableDesigns={designs}
+                onSave={(layers) => {
+                    alert("Sleeve saved to project file.");
+                    setIsBuilderOpen(false);
+                }}
+                onClose={() => setIsBuilderOpen(false)}
+            />
+        )}
+      </Suspense>
 
       {/* Intake Waiver Overlay */}
-      {isWaiverOpen && (
-          <ClientWaiverModal 
-             onSign={(waiver) => {
-                 console.log("Waiver Signed:", waiver);
-                 setIsWaiverOpen(false);
-                 alert(`Waiver signed by ${waiver.clientName}`);
-             }}
-             onClose={() => setIsWaiverOpen(false)}
-          />
-      )}
+      <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><div className="animate-spin text-accent-gold">Loading Waiver...</div></div>}>
+        {isWaiverOpen && (
+            <ClientWaiverModal
+                onSign={(waiver) => {
+                    console.log("Waiver Signed:", waiver);
+                    setIsWaiverOpen(false);
+                    alert(`Waiver signed by ${waiver.clientName}`);
+                }}
+                onClose={() => setIsWaiverOpen(false)}
+            />
+        )}
+      </Suspense>
     </div>
   );
 });
