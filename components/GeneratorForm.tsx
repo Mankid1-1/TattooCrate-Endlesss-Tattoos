@@ -81,11 +81,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 ref={conceptInputRef}
                 id={conceptInputId}
                 type="text" 
- sentinel-input-limits-17124088429024588354
                 maxLength={500}
-
-                maxLength={1000}
- ZenBeasts
                 value={concept}
                 onChange={(e) => {
                   if (e.target.value.length <= 1000) setConcept(e.target.value);
