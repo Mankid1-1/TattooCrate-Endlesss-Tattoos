@@ -18,10 +18,16 @@ const PLACEMENT_ICONS: Record<BodyPlacement, string> = {
   [BodyPlacement.NECK]: '👤',
 };
 
+const ALL_PLACEMENTS = Object.values(BodyPlacement);
+
 export const PlacementGrid = React.memo<PlacementGridProps>(({ selectedPlacement, mode, onSelect }) => {
+  const visiblePlacements = React.useMemo(() =>
+    ALL_PLACEMENTS.filter(p => mode === ProjectMode.SINGLE ? true : p !== BodyPlacement.PAPER),
+  [mode]);
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      {Object.values(BodyPlacement).filter(p => mode === ProjectMode.SINGLE ? true : p !== BodyPlacement.PAPER).map((place) => (
+      {visiblePlacements.map((place) => (
         <Tooltip key={place} content={`Select ${place}`} className="w-full h-full">
           <button
             aria-pressed={selectedPlacement === place}
