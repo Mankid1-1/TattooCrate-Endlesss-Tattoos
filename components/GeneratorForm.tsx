@@ -21,8 +21,15 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
   const [mode, setMode] = useState<ProjectMode>(ProjectMode.SINGLE);
   const [projectSize, setProjectSize] = useState(4); // Default 4 items for project
   const conceptInputId = React.useId();
+  const conceptInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
+ palette-generator-ux-14832640893578868664
+    if (!concept) {
+      conceptInputRef.current?.focus();
+      return;
+    }
+
     if (!concept) return;
 
     // Security: Validate input length to prevent DoS
@@ -31,6 +38,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
       return;
     }
 
+ ZenBeasts
     const size = mode === ProjectMode.SINGLE ? 1 : projectSize;
     onGenerate(concept, placement, style, size, mode);
   };
@@ -70,6 +78,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
           <Tooltip content="Describe your tattoo idea" position="top" className="w-full">
             <div className="relative group w-full">
               <input 
+                ref={conceptInputRef}
                 id={conceptInputId}
                 type="text" 
  sentinel-input-limits-17124088429024588354
@@ -126,19 +135,18 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                     return (
                         <Tooltip key={s} content={isLocked ? "Upgrade for larger sleeves" : `${s} Design Elements`} className="w-full">
                         <button 
-                            disabled={isLocked}
                             aria-pressed={projectSize === s && !isLocked}
-                            aria-label={`Select ${s} design elements`}
-                            onClick={() => setProjectSize(s)}
+                            aria-label={isLocked ? `Unlock ${s} design elements (Pro feature)` : `Select ${s} design elements`}
+                            onClick={() => isLocked ? onUpgrade() : setProjectSize(s)}
                             className={`w-full relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
                                 projectSize === s && !isLocked
                                 ? 'border-accent-gold bg-accent-gold/10 text-accent-gold' 
                                 : 'border-ink-700 bg-ink-900 text-ink-500'
-                            } ${!isLocked && 'hover:border-ink-500'} ${isLocked && 'opacity-40 cursor-not-allowed'}`}
+                            } ${!isLocked && 'hover:border-ink-500'} ${isLocked && 'opacity-60 cursor-pointer hover:border-accent-gold/30'}`}
                         >
                             <span className="font-black text-lg">{s}</span>
                             {isLocked && (
-                                <div onClick={(e) => { e.stopPropagation(); onUpgrade(); }} className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px] cursor-pointer hover:bg-black/30 rounded-lg">
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px] rounded-lg">
                                     <Lock className="w-3 h-3 text-ink-300" />
                                 </div>
                             )}
@@ -165,12 +173,13 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
         <Tooltip content={!concept ? "Enter a concept first" : "Start Generation"} className="w-full">
           <button
             onClick={handleSubmit}
-            disabled={!concept || isLoading}
+            disabled={isLoading}
+            aria-disabled={!concept}
             className={`w-full py-5 rounded-lg text-ink-950 font-black text-lg shadow-lg shadow-accent-gold/10 transition-all transform active:scale-[0.98] hover:-translate-y-1 relative overflow-hidden ${
               !concept || isLoading 
-                ? 'bg-ink-700 cursor-not-allowed shadow-none text-ink-500' 
+                ? 'bg-ink-700 shadow-none text-ink-500'
                 : 'bg-accent-gold hover:bg-yellow-400'
-            }`}
+            } ${!concept ? 'cursor-not-allowed opacity-80' : ''}`}
           >
               <div className="flex items-center justify-center gap-3 relative z-10">
                   {isLoading ? (
