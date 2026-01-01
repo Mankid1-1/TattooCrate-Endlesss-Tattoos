@@ -292,27 +292,47 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
 
         {/* Toolbar */}
         <div className="bg-ink-900 p-4 pb-8 border-t border-ink-800">
-            <div className="flex justify-center space-x-6 mb-6">
+            <div className="flex justify-center space-x-6 mb-6" role="toolbar" aria-label="Editor Tools">
                 <Tooltip content="Select & Move">
-                  <button onClick={() => setTool('move')} className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'move' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}>
+                  <button
+                    onClick={() => setTool('move')}
+                    aria-label="Select and Move Tool"
+                    aria-pressed={tool === 'move'}
+                    className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'move' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}
+                  >
                       <MousePointer2 className="w-5 h-5" />
                       <span className="text-[10px] font-bold uppercase">Move</span>
                   </button>
                 </Tooltip>
                 <Tooltip content="Ink Pen">
-                  <button onClick={() => setTool('draw')} className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'draw' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}>
+                  <button
+                    onClick={() => setTool('draw')}
+                    aria-label="Ink Pen Tool"
+                    aria-pressed={tool === 'draw'}
+                    className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'draw' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}
+                  >
                       <PenTool className="w-5 h-5" />
                       <span className="text-[10px] font-bold uppercase">Draw</span>
                   </button>
                 </Tooltip>
                 <Tooltip content="Add Motifs">
-                  <button onClick={() => setTool('motif')} className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'motif' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}>
+                  <button
+                    onClick={() => setTool('motif')}
+                    aria-label="Motif Tool"
+                    aria-pressed={tool === 'motif'}
+                    className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'motif' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}
+                  >
                       <Sticker className="w-5 h-5" />
                       <span className="text-[10px] font-bold uppercase">Motif</span>
                   </button>
                 </Tooltip>
                 <Tooltip content="Add Typography">
-                  <button onClick={() => setTool('text')} className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'text' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}>
+                  <button
+                    onClick={() => setTool('text')}
+                    aria-label="Typography Tool"
+                    aria-pressed={tool === 'text'}
+                    className={`p-4 rounded-lg flex flex-col items-center gap-1 transition-all ${tool === 'text' ? 'bg-accent-gold text-black' : 'text-ink-400 hover:bg-ink-800'}`}
+                  >
                       <Type className="w-5 h-5" />
                       <span className="text-[10px] font-bold uppercase">Type</span>
                   </button>
@@ -322,9 +342,16 @@ export const CreativeEditor: React.FC<CreativeEditorProps> = ({ pageId, baseImag
             {/* Sub-tools */}
             <div className="min-h-[60px]">
                 {tool === 'motif' && (
-                    <div className="flex gap-4 overflow-x-auto pb-2 px-2 scrollbar-hide">
+                    <div className="flex gap-4 overflow-x-auto pb-2 px-2 scrollbar-hide" role="group" aria-label="Select Motif">
                         {MOTIFS.map(s => (
-                            <button key={s} onClick={() => addMotif(s)} className="text-2xl hover:scale-125 transition-transform p-1">{s}</button>
+                            <button
+                                key={s}
+                                onClick={() => addMotif(s)}
+                                aria-label={`Add ${s} motif`}
+                                className="text-2xl hover:scale-125 transition-transform p-1"
+                            >
+                                {s}
+                            </button>
                         ))}
                     </div>
                 )}
