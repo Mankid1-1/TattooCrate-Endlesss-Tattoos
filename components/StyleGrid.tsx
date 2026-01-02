@@ -31,29 +31,45 @@ const getStyleEmoji = (style: TattooStyle) => {
 
 const TATTOO_STYLES = Object.values(TattooStyle);
 
+interface StyleButtonProps {
+    style: TattooStyle;
+    isSelected: boolean;
+    onSelect: (style: TattooStyle) => void;
+}
+
+const StyleButton = React.memo<StyleButtonProps>(({ style, isSelected, onSelect }) => (
+    <Tooltip content={style} position="top" className="w-full">
+        <button
+            aria-pressed={isSelected}
+            aria-label={`Select ${style} style`}
+            onClick={() => onSelect(style)}
+            className={`w-full p-3 rounded-lg border text-left transition-all group ${
+                isSelected
+                ? 'border-accent-gold bg-accent-gold/10'
+                : 'border-ink-700 bg-ink-900 hover:border-ink-500'
+            }`}
+        >
+            <div className={`w-full h-12 rounded bg-ink-950 overflow-hidden relative mb-2 flex items-center justify-center ${isSelected ? 'ring-1 ring-accent-gold' : ''}`}>
+                <span className="text-2xl filter grayscale contrast-125 group-hover:filter-none transition-all">{getStyleEmoji(style)}</span>
+            </div>
+            <span className={`text-[10px] uppercase font-bold tracking-wider ${isSelected ? 'text-accent-gold' : 'text-ink-400'}`}>
+                {style.split(' ')[0]}
+            </span>
+        </button>
+    </Tooltip>
+));
+StyleButton.displayName = 'StyleButton';
+
 export const StyleGrid = React.memo<StyleGridProps>(({ selectedStyle, onSelect }) => {
   return (
     <div className="grid grid-cols-2 gap-2 h-64 overflow-y-auto pr-1 custom-scrollbar">
         {TATTOO_STYLES.map((s) => (
-            <Tooltip key={s} content={s} position="top" className="w-full">
-              <button
-                  aria-pressed={selectedStyle === s}
-                  aria-label={`Select ${s} style`}
-                  onClick={() => onSelect(s)}
-                  className={`w-full p-3 rounded-lg border text-left transition-all group ${
-                      selectedStyle === s
-                      ? 'border-accent-gold bg-accent-gold/10'
-                      : 'border-ink-700 bg-ink-900 hover:border-ink-500'
-                  }`}
-              >
-                  <div className={`w-full h-12 rounded bg-ink-950 overflow-hidden relative mb-2 flex items-center justify-center ${selectedStyle === s ? 'ring-1 ring-accent-gold' : ''}`}>
-                     <span className="text-2xl filter grayscale contrast-125 group-hover:filter-none transition-all">{getStyleEmoji(s)}</span>
-                  </div>
-                  <span className={`text-[10px] uppercase font-bold tracking-wider ${selectedStyle === s ? 'text-accent-gold' : 'text-ink-400'}`}>
-                      {s.split(' ')[0]}
-                  </span>
-              </button>
-            </Tooltip>
+            <StyleButton
+                key={s}
+                style={s}
+                isSelected={selectedStyle === s}
+                onSelect={onSelect}
+            />
         ))}
     </div>
   );
