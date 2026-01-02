@@ -16,7 +16,11 @@ const INSPIRATION_PROMPTS = [
 
 export const InspirationRail = React.memo<InspirationRailProps>(({ onSelect }) => {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+    <div
+      className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x"
+      role="group"
+      aria-label="Inspiration Concepts"
+    >
       {INSPIRATION_PROMPTS.map((prompt) => (
         <Tooltip key={prompt.text} content="Use this concept">
           <button
