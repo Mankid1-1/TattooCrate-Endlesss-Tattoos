@@ -31,8 +31,8 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
     }
 
     // Security: Validate input length to prevent DoS
+    // Note: maxLength on input prevents > 500, but keeping check for safety
     if (concept.length > 500) {
-      alert("Concept description is too long. Please keep it under 500 characters.");
       return;
     }
 
@@ -82,16 +82,16 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                 maxLength={500}
                 value={concept}
                 onChange={(e) => {
-                  if (e.target.value.length <= 1000) setConcept(e.target.value);
+                  if (e.target.value.length <= 500) setConcept(e.target.value);
                 }}
                 placeholder={mode === ProjectMode.PROJECT ? "e.g. Ocean theme sleeve with ships and kraken..." : "e.g. A roaring tiger, black and grey..."}
                 className="w-full px-6 py-5 rounded-lg bg-ink-900 border border-ink-600 focus:border-accent-gold focus:ring-1 focus:ring-accent-gold outline-none transition-all text-lg font-medium text-white placeholder:text-ink-600"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-600 pointer-events-none group-focus-within:text-accent-gold transition-colors">
-                <Sparkles className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" aria-hidden="true" />
               </div>
             </div>
-            <div id={charCountId} className="text-right text-[10px] text-ink-500 mt-1 font-mono">
+            <div id={charCountId} className={`text-right text-[10px] mt-1 font-mono transition-colors ${concept.length >= 500 ? 'text-red-500 font-bold' : concept.length > 450 ? 'text-orange-500' : 'text-ink-500'}`}>
                 <span className="sr-only">Characters used: </span>
                 {concept.length} / 500
             </div>
