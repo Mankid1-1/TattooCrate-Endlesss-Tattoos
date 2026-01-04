@@ -16,19 +16,24 @@ const INSPIRATION_PROMPTS = [
 
 export const InspirationRail = React.memo<InspirationRailProps>(({ onSelect }) => {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+    <ul
+      className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x"
+      aria-label="Inspiration prompts"
+    >
       {INSPIRATION_PROMPTS.map((prompt) => (
-        <Tooltip key={prompt.text} content="Use this concept">
-          <button
-            onClick={() => onSelect(prompt.text)}
-            className="snap-start flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-ink-900 border border-ink-700 rounded-md hover:border-accent-gold/50 hover:text-accent-gold transition-all text-xs font-bold text-ink-400 shadow-sm active:scale-95 uppercase tracking-wide"
-          >
-            <span>{prompt.emoji}</span>
-            <span>{prompt.text}</span>
-          </button>
-        </Tooltip>
+        <li key={prompt.text} className="snap-start flex-shrink-0">
+          <Tooltip content="Use this concept">
+            <button
+              onClick={() => onSelect(prompt.text)}
+              className="flex items-center gap-2 px-4 py-2 bg-ink-900 border border-ink-700 rounded-md hover:border-accent-gold/50 hover:text-accent-gold transition-all text-xs font-bold text-ink-400 shadow-sm active:scale-95 uppercase tracking-wide"
+            >
+              <span aria-hidden="true">{prompt.emoji}</span>
+              <span>{prompt.text}</span>
+            </button>
+          </Tooltip>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 });
 
