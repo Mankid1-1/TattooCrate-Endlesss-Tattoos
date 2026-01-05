@@ -157,30 +157,49 @@ const App: React.FC = () => {
     });
 
     try {
-      const newDesigns: DesignData[] = [];
-      for (let i = 0; i < size; i++) {
-        if (size > 1) setLoadingProgress({ current: i + 1, total: size });
-        
-        const imageUrl = await generateTattooDesign({
-          concept,
-          placement,
-          style,
-          tier,
-          variationIndex: i,
-          isProjectItem: mode === ProjectMode.PROJECT // If project mode, force flash style
-        });
+      // ⚡ Performance Optimization:
+      // Run all generations in parallel instead of sequentially awaiting them.
+      // This drastically reduces total wait time from (T * N) to roughly T.
+      // We update state as each promise resolves to show progress.
 
-        const design: DesignData = {
-            id: Date.now().toString() + i,
-            originalUrl: imageUrl,
-            modifiedUrl: null,
-            promptUsed: concept,
-            placement: placement,
-            createdAt: Date.now()
-        };
-        newDesigns.push(design);
-        setPortfolioState(prev => ({ ...prev, designs: [...prev.designs, design] }));
-      }
+      let completedCount = 0;
+
+      const promises = Array.from({ length: size }).map(async (_, i) => {
+          try {
+             const imageUrl = await generateTattooDesign({
+                concept,
+                placement,
+                style,
+                tier,
+                variationIndex: i,
+                isProjectItem: mode === ProjectMode.PROJECT // If project mode, force flash style
+             });
+
+             const design: DesignData = {
+                id: Date.now().toString() + i, // Unique ID even if generated at same ms
+                originalUrl: imageUrl,
+                modifiedUrl: null,
+                promptUsed: concept,
+                placement: placement,
+                createdAt: Date.now()
+             };
+
+             // Streaming update: Update state as soon as this design is ready
+             setPortfolioState(prev => ({ ...prev, designs: [...prev.designs, design] }));
+
+          } catch (e: any) {
+             console.error(`Design ${i+1} failed`, e);
+             throw e; // Re-throw to be caught by Promise.all
+          } finally {
+             completedCount++;
+             if (size > 1) {
+                setLoadingProgress({ current: completedCount, total: size });
+             }
+          }
+      });
+
+      await Promise.all(promises);
+
     } catch (err: any) {
       console.error(err);
       if (err.message === "PERMISSION_DENIED") {
@@ -191,7 +210,10 @@ const App: React.FC = () => {
             alert("Access Denied. Please check your API Key settings.");
         }
       } else {
-         alert("Could not generate tattoo design. Try again.");
+         // Some might have succeeded, so alert might be confusing if user sees images.
+         // But usually if one fails (like auth), all fail.
+         // If partial failure (network), we already logged it.
+         alert("Could not generate all tattoo designs. Some may have failed.");
       }
     } finally {
       setLoading(false);
