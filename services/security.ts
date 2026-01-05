@@ -68,3 +68,21 @@ export const isValidImageUrl = (url: string): boolean => {
 
   return false;
 };
+
+/**
+ * Safely logs an error to the console without exposing sensitive properties.
+ * Strictly logs message, name, and stack if available, masking potential secrets.
+ *
+ * @param context A string describing the context of the error
+ * @param error The error object
+ */
+export const logSafeError = (context: string, error: any) => {
+    const safeError = {
+        message: error?.message || "Unknown error",
+        name: error?.name || "Error",
+        // Do not include the full error object as it may contain config/headers with secrets
+    };
+
+    // Log with a clear prefix and only safe properties
+    console.error(`[${context}] ${safeError.name}: ${safeError.message}`);
+};
