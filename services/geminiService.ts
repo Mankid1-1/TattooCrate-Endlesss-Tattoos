@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppTier, GenerationParams, BodyPlacement } from "../types";
-import { sanitizePromptInput } from "./security";
+import { sanitizePromptInput, logSafeError } from "./security";
 
 export const generateTattooDesign = async (params: GenerationParams): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -82,10 +82,15 @@ export const generateTattooDesign = async (params: GenerationParams): Promise<st
 
     throw new Error("No image data found in response.");
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
+    // Security: Log only safe details to prevent leaking API keys or headers from the error object
+    logSafeError("Gemini API Error", error);
+
     if (error.status === 403 || error.code === 403 || (error.message && error.message.includes('permission'))) {
        throw new Error("PERMISSION_DENIED");
     }
-    throw error;
+
+    // Security: Re-throw a clean error to prevent leaking implementation details to the UI
+    const safeMessage = error.message || "Unknown generation error";
+    throw new Error(`Generation failed: ${safeMessage}`);
   }
 };
