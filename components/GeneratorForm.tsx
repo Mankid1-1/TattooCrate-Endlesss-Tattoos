@@ -124,7 +124,7 @@ export const GeneratorForm = React.memo<GeneratorFormProps>(({ onGenerate, isLoa
                     <span>Project Complexity</span>
                     </div>
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div role="group" aria-label="Project Complexity" className="grid grid-cols-4 gap-2">
                     {[4, 6, 8, 10].map((s) => {
                     const isLocked = tier === AppTier.FREE && s > 4;
                     return (
