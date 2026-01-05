@@ -33,7 +33,11 @@ const TATTOO_STYLES = Object.values(TattooStyle);
 
 export const StyleGrid = React.memo<StyleGridProps>(({ selectedStyle, onSelect }) => {
   return (
-    <div className="grid grid-cols-2 gap-2 h-64 overflow-y-auto pr-1 custom-scrollbar">
+    <div
+      role="group"
+      aria-label="Tattoo Style"
+      className="grid grid-cols-2 gap-2 h-64 overflow-y-auto pr-1 custom-scrollbar"
+    >
         {TATTOO_STYLES.map((s) => (
             <Tooltip key={s} content={s} position="top" className="w-full">
               <button

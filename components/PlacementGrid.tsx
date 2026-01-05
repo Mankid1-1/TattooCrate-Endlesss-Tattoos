@@ -26,7 +26,7 @@ export const PlacementGrid = React.memo<PlacementGridProps>(({ selectedPlacement
   [mode]);
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div role="group" aria-label="Body Placement" className="grid grid-cols-2 gap-2">
       {visiblePlacements.map((place) => (
         <Tooltip key={place} content={`Select ${place}`} className="w-full h-full">
           <button
